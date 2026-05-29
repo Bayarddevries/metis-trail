@@ -1510,5 +1510,68 @@ document.getElementById('fs-toggle').onclick = () => {
   else document.exitFullscreen();
 };
 </script>
+<script>
+// Patched presentEvent to ensure visible buttons and always offer Continue
+(function() {
+  const oldPresent = presentEvent;
+  presentEvent = function() {
+    const ev = game.getPendingEvent();
+    if (!ev) { console.warn('presentEvent called with no pending event'); return; }
+    document.getElementById('event-overlay').classList.add('active');
+    document.getElementById('event-text').innerHTML = ev.text.replace(/\n/g, '<br>');
+    const dice = document.getElementById('dice-roll');
+    const result = document.getElementById('event-result');
+    dice.classList.add('hidden');
+    result.classList.remove('hidden');
+    result.innerHTML = ev.result || '';
+    const choices = document.getElementById('event-choices');
+    if (!choices) { console.error('Missing #event-choices'); return; }
+    choices.innerHTML = '';
+    console.log('presentEvent', ev.id, 'choices', ev.choices?.length);
+    window.eventLog = window.eventLog || [];
+    window.eventLog.push({ id: ev.id, total: ev.choices?.length, time: Date.now() });
+    let rendered = 0;
+    ev.choices.forEach((ch, idx) => {
+      if (!ch.needMet) return;
+      const btn = document.createElement('button');
+      btn.className = 'choice-btn';
+      btn.textContent = ch.text;
+      btn.onclick = () => submitChoice(idx, ch);
+      btn.style.display = 'inline-block';
+      btn.style.visibility = 'visible';
+      btn.style.opacity = '1';
+      btn.style.minWidth = '120px';
+      btn.style.minHeight = '44px';
+      choices.appendChild(btn);
+      rendered++;
+      requestAnimationFrame(() => {
+        if (btn.offsetWidth === 0 || btn.offsetHeight === 0) {
+          console.warn('Button invisible:', ev.id, ch.text, { w: btn.offsetWidth, h: btn.offsetHeight });
+        }
+      });
+    });
+    console.log('Rendered', rendered, 'buttons for', ev.id);
+    const continueBtn = document.createElement('button');
+    continueBtn.className = 'choice-btn';
+    continueBtn.textContent = 'Continue';
+    continueBtn.style.display = 'inline-block';
+    continueBtn.style.visibility = 'visible';
+    continueBtn.style.opacity = '1';
+    continueBtn.style.minWidth = '120px';
+    continueBtn.style.minHeight = '44px';
+    continueBtn.style.background = '#c00';
+    continueBtn.style.color = '#fff';
+    continueBtn.style.fontWeight = 'bold';
+    continueBtn.onclick = () => {
+      console.warn('Continue fallback used for event:', ev.id);
+      window.eventLog.push({ id: ev.id, fallback: true, time: Date.now() });
+      S.pendingEvent = null;
+      closeOverlay('event-overlay');
+    };
+    choices.appendChild(continueBtn);
+  };
+  console.log('presentEvent patched');
+})();
+</script>
 </body>
 </html>
