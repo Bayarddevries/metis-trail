@@ -838,6 +838,15 @@ const EVENTS = {
     { text: 'Join an existing brigade — safety in numbers', dc: null, ok: '', bad: '', always: 'You join the brigade. The overseer welcomes you. You learn the rules: no straying from camp, no hunting on the Sabbath, and the penalties — first offense, your saddle cut up; second, your coat; third, the lash. Travel is slower, but you are not alone.', brigadeBonus: true },
     { text: 'Propose forming your own brigade — you will be the captain', dc: 13, ok: 'Your cart is in good order, your food stores adequate, and your manner convincing. Three other drivers agree to join your brigade. You elect a guide, raise a flag, and set out westward as an organized company. The flag flies. You are the captain.', bad: 'Not enough drivers are interested. Most prefer to travel alone, or their routes diverge. You press on solo — but the idea stays with you. There will be other junctions.', brigadeBonus: true },
     { text: 'Decline — you travel faster alone', dc: null, ok: '', bad: '', always: 'You nod politely and move on. The brigade means shared decisions, shared pace, and shared risk. You are your own captain. The trail ahead is yours alone.' }
+  ]},
+  { id: 'crew_recruitment', text: "A figure sits alone at a campfire by the trail apart from the other travellers, cooking something that smells of wild game and prairie herbs.\n\nAs you approach, the figure looks up. Sharp eyes. Weathered face. A hunter, by the look of the rifle leaning against the saddle.\n\n\"You are heading west?\" the hunter asks. \"So am I. Travel is safer with company.\"", choices: [
+    { text: 'Invite them to join your crew', dc: 11, ok: '"Wise choice." The hunter stands, extends a hand. "Emile. I know every trail between here and the Saskatchewan. The prairie talks — you just have to listen." You gain a skilled hunter.', bad: 'The hunter considers, then shakes their head. "I work alone. But I wish you safe travel." They return to their fire. You move on alone.', recruitCrew: 'emile' },
+    { text: 'Nod politely and move on — you travel alone', dc: null, ok: '', bad: '', always: 'You tip your hat and keep walking. The hunter watches you go. The trail is long, and not everyone shares the same destination.' },
+    { text: 'Ask if they know the trail ahead (no recruitment)', dc: 9, ok: 'The hunter tells you about the next stretch — good water at the crossing, but watch for mud after the hills. "There is trouble between here and there," they say. "But you look like you can handle trouble."', bad: 'The hunter shrugs. "The trail is the trail. You will find out." They return to their fire.', crew: 'rested' }
+  ]},
+  { id: 'crew_death', text: "Your crew member <CREW_NAME> has been getting worse. The fever that started days ago has not broken. This morning, they cannot stand.\n\nThe trail offers no mercy — no surgeon, no priest, no settlement within days. Just the prairie and the sun and the slow arithmetic of infection.", choices: [
+    { text: 'Stay and care for them (Survival DC 13)', dc: 13, ok: 'You stay. Day and night, you keep them cool, keep them hydrated, keep them breathing. On the fourth day, the fever breaks. They will live. But you have lost four days.', bad: 'You do everything you can. It is not enough. On the third night, they die quietly. You bury them in the morning — a cairn of prairie stones, a prayer you half-remember. The trail stretches ahead, emptier than before.', crewDeath: true, time: 4 },
+    { text: 'Make them comfortable and keep moving', dc: null, ok: '', bad: '', always: 'You wrap them in blankets, place them in the cart, and keep moving. Every bump is an agony. On the second day, they die. You bury them by the trail and stand for a long time before hitching the ox.', crewDeath: true }
   ]}
   ],
   river_valley: [
@@ -1022,7 +1031,8 @@ function createGame(seed) {
     food: 30, wear: 0, squealLevel: 0, node: 0, segmentDay: 0, travelDaysWithoutRest: 0,
     over: false, won: false, pendingEvent: null, pendingSettlement: null, pendingSundayRest: false,
     score: 0, camps: 0, eventsResolved: 0, tradesMade: 0,
-    buffaloHuntStage: 0, buffaloHuntRole: null, buffaloHuntYield: 0, brigade: false
+    buffaloHuntStage: 0, buffaloHuntRole: null, buffaloHuntYield: 0, brigade: false,
+    crewDetail: { members: [] }
   };
 
   const narrative = [];
@@ -1234,6 +1244,32 @@ function createGame(seed) {
       if (ch.huntComplete === 'partial') { S.food = Math.max(0, S.food - 10); result.effects.push('-10 Food (spoilage)'); }
     }
     if (ch.brigadeBonus) { S.brigade = true; result.effects.push('Joined brigade (+1 all rolls, -1 speed)'); }
+    if (ch.recruitCrew) {
+      const crewData = {
+        emile: { name: 'Emile Laroque', role: 'Hunter', health: 3, morale: 'steady', skills: { survival: 2 }, alive: true },
+        josette: { name: 'Josette Fontaine', role: 'Trader', health: 3, morale: 'sharp', skills: { trade: 2 }, alive: true },
+        celeste: { name: 'Marie-Celeste Morin', role: 'Elder', health: 2, morale: 'deep', skills: { spirit: 2 }, alive: true },
+        jb: { name: 'JB Bruyere', role: 'Scout', health: 3, morale: 'restless', skills: { navigation: 2 }, alive: true }
+      };
+      const newCrew = crewData[ch.recruitCrew];
+      if (newCrew && !S.crewDetail.members.some(m => m.name === newCrew.name)) {
+        S.crewDetail.members.push({...newCrew});
+        result.effects.push('+ Crew: ' + newCrew.name + ' (' + newCrew.role + ')');
+      }
+    }
+    if (ch.crewDeath) {
+      const alive = S.crewDetail.members.filter(m => m.alive);
+      const sickest = alive.sort((a, b) => a.health - b.health)[0];
+      if (sickest) {
+        if (ch.dc !== null && !result.success) {
+          sickest.alive = false; sickest.health = 0;
+          result.effects.push(sickest.name + ' has died.');
+        } else if (ch.dc === null) {
+          sickest.alive = false; sickest.health = 0;
+          result.effects.push(sickest.name + ' has died.');
+        }
+      }
+    }
     return result;
   }
 
@@ -1462,7 +1498,13 @@ function hideAllOverlays() {
 function presentEvent() {
   const ev = game.getPendingEvent();
   if (!ev) return;
-  const _eEmoji = { rough_ground:'🪨', prairie_fire:'🔥', buffalo_herd:'🦬', game_sighted:'🦌', abandoned_camp:'🛺', snake_in_cart:'🐍', good_grazing:'🌿', trail_marker:'🪧', prairie_wind:'💨', thunderhead:'⛈️', meadowlark:'🐦', dried_waterhole:'🏜️', ox_injury:'🦶', other_travelers:'🛺', spring_flooding:'🌊', fishing_spot:'🎣', willow_shade:'🌳', mud_hole:'🟤', riverbank_collapse:'💥', mosquito_plague:'🦟', broken_ferry:'⛴️', friendly_métis:'⛪', flash_flood:'🌧️', fallen_tree:'🪵', berries:'🫐', lost_trail:'🧭', bear_encounter:'🐻', broken_wheel:'🔧', deer_crossing:'🦌', firewood_opportunity:'🪵', old_cabin:'🏠', steep_descent:'⛰️', eagle:'🦅', rockslide:'🪨', wind_exposure:'🌬️', lost_in_fog:'🌫️', major_crossing:'🌊',    nwmp_patrol:'⭐', mosquito_siege:'🦟', crane_hunt:'🦢', eagle_encounter:'🦅', spy_encounter:'🕵️', geometry_lesson:'🫏', sick_mule:'🐴', elk_hunt:'🦌', antelope_hunt:'🦌', buffalo_hunt_council:'🦬', buffalo_hunt_march:'🦬', buffalo_hunt_chase:'🦬', buffalo_hunt_return:'🦬', brigade_organization:'🚩' };
+  const _eEmoji = { rough_ground:'🪨', prairie_fire:'🔥', buffalo_herd:'🦬', game_sighted:'🦌', abandoned_camp:'🛺', snake_in_cart:'🐍', good_grazing:'🌿', trail_marker:'🪧', prairie_wind:'💨', thunderhead:'⛈️', meadowlark:'🐦', dried_waterhole:'🏜️', ox_injury:'🦶', other_travelers:'🛺', spring_flooding:'🌊', fishing_spot:'🎣', willow_shade:'🌳', mud_hole:'🟤', riverbank_collapse:'💥', mosquito_plague:'🦟', broken_ferry:'⛴️', friendly_métis:'⛪', flash_flood:'🌧️', fallen_tree:'🪵', berries:'🫐', lost_trail:'🧭', bear_encounter:'🐻', broken_wheel:'🔧', deer_crossing:'🦌', firewood_opportunity:'🪵', old_cabin:'🏠', steep_descent:'⛰️', eagle:'🦅', rockslide:'🪨', wind_exposure:'🌬️', lost_in_fog:'🌫️', major_crossing:'🌊',    nwmp_patrol:'⭐', mosquito_siege:'🦟', crane_hunt:'🦢', eagle_encounter:'🦅', spy_encounter:'🕵️', geometry_lesson:'🫏', sick_mule:'🐴', elk_hunt:'🦌', antelope_hunt:'🦌',    buffalo_hunt_council:'🦬', buffalo_hunt_march:'🦬', buffalo_hunt_chase:'🦬', buffalo_hunt_return:'🦬', brigade_organization:'🚩', crew_recruitment:'👤', crew_death:'💀' };
+    // Replace placeholders in events
+    if (ev.id === 'crew_death' && S.crewDetail.members.length > 0) {
+      const alive = S.crewDetail.members.filter(m => m.alive);
+      const sickest = alive.sort((a, b) => a.health - b.health)[0];
+      if (sickest) ev.text = ev.text.replace('<CREW_NAME>', sickest.name);
+    }
     // Replace role placeholder in buffalo hunt events
     if (ev.id && ev.id.startsWith('buffalo_hunt') && S.buffaloHuntRole) {
       const roleText = { hunter: 'a hunter — you will ride with the hunting party', soldier: 'a soldier — you guard the camp and maintain order', guide: 'a guide — you read the prairie and find the herds' };
