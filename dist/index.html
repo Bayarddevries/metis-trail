@@ -1263,6 +1263,8 @@ function presentEvent() {
     btn.className = 'choice-btn';
     btn.textContent = ch.text;
     btn.onclick = () => {
+      if (btn.dataset.clicked) return;
+      btn.dataset.clicked = '1';
       // Hide choices, show dice roll
       choices.style.display = 'none';
       const result = game.chooseEventChoice(i);
@@ -1283,6 +1285,14 @@ function showDiceRoll(result, choice, onComplete) {
   const details = document.getElementById('dice-details');
   const resultEl = document.getElementById('event-result');
   const continueBtn = document.getElementById('event-continue');
+
+  // Guard: if result is null/undefined (e.g. double-click), bail out
+  if (!result) {
+    console.warn('showDiceRoll: no result, skipping');
+    diceEl.style.display = 'none';
+    if (onComplete) onComplete();
+    return;
+  }
 
   diceEl.style.display = 'block';
   resultEl.style.display = 'none';
