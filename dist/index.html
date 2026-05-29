@@ -1268,7 +1268,9 @@ function presentEvent() {
       // Hide choices, show dice roll
       choices.style.display = 'none';
       const result = game.chooseEventChoice(i);
-      showDiceRoll(result, ch, () => {
+      // chooseEventChoice returns an array; extract the inner result object
+      const inner = Array.isArray(result) ? (result[0]?.result || null) : result;
+      showDiceRoll(inner, ch, () => {
         showNarrative();
         updateStatus();
         updateMap();
