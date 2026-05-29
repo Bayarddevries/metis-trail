@@ -1096,6 +1096,33 @@ function createGame(seed) {
       }
       else say("You browse the goods, but have nothing to trade.");
     }
+    if (action === 'forage') {
+      const foodFound = Math.floor(rand() * 4) + 1; // 1-4 food
+      S.food += foodFound;
+      S.day++; advanceMonth();
+      say(`You forage the settlement edges — wild berries, roots, whatever grows this close to the river. +${foodFound} Food. A day well spent.`);
+    }
+    if (action === 'rumours') {
+      const rumours = [
+        "A traveller mentions good grazing near the next water crossing. The horses ahead found sweet grass.",
+        "You hear that the Touchwood Hills pass is muddy but passable. The brigade ahead lost time but not supplies.",
+        "Someone mentions NWMP at the next fort are checking every cart. Best to have your goods in order.",
+        "A trader warns: alkaline water in the next stretch. Fill your barrel before you reach it."
+      ];
+      const r = rumours[Math.floor(rand() * rumours.length)];
+      say(`You spend an hour trading stories and news with the other travellers. "${r}"`);
+    }
+    if (action === 'theology') {
+      say("The man of science is here again — dividing his time between Paul's Epistles and the compound microscope. You sit through a theology lecture that touches on grace, geology, and the nature of moss. Your morals are mended, if not your trousers.");
+    }
+    if (action === 'inspect') {
+      const hasTrade = cart.some(i => i.type === 'trade' && i.count > 0);
+      if (hasTrade) {
+        say("The NWMP sergeant inspects your cart with professional thoroughness. He notes your trade goods, checks for contraband, and finds everything in order. He stamps your travel papers and wishes you a safe journey. You feel oddly protected.");
+      } else {
+        say("The NWMP sergeant inspects your cart. He finds nothing but supplies and tools. He seems almost disappointed. 'No trade goods?' he asks. You shake your head. He waves you through.");
+      }
+    }
   }
 
   function sundayAction(action) {
@@ -1128,11 +1155,11 @@ function createGame(seed) {
 
   function getSettlementActions(n) {
     const a = [];
-    if (n.type === 'hbc') a.push('grease', 'trade', 'repair', 'rest');
-    else if (n.type === 'metis') a.push('grease', 'trade', 'rest');
-    else if (n.type === 'trading') a.push('grease', 'trade', 'rest');
-    else if (n.type === 'mission') a.push('grease', 'rest', 'heal');
-    else if (n.type === 'nwmp') a.push('grease', 'trade', 'rest');
+    if (n.type === 'hbc') a.push('grease', 'trade', 'repair', 'rest', 'rumours');
+    else if (n.type === 'metis') a.push('grease', 'trade', 'rest', 'forage');
+    else if (n.type === 'trading') a.push('grease', 'trade', 'rest', 'rumours');
+    else if (n.type === 'mission') a.push('grease', 'rest', 'heal', 'theology');
+    else if (n.type === 'nwmp') a.push('grease', 'trade', 'rest', 'inspect');
     a.push('continue');
     return a;
   }
@@ -1505,12 +1532,23 @@ function presentSettlement() {
   document.getElementById('settlement-name').textContent = node.name;
   document.getElementById('settlement-desc').textContent = node.desc;
 
+    // Settlement-specific flavor text
+    const special = {
+      "Fort Qu'Appelle": "\n\nThe NWMP post sits on a bluff above the river. Red-coated sentries watch the trail in both directions. The customs officer has seen everything — and forgotten nothing.",
+      "St. Boniface": "\n\nThe Grey Nuns are already walking toward your cart with soup and bandages. They do not ask if you are Catholic. They do not ask if you are well. They simply begin to help.",
+      "Batoche": "\n\nThe church bell rings across the valley as you approach. Children run alongside the cart. Someone is cooking bannock over an open fire. This is not just a settlement — it is a home."
+    };
+    if (special[node.name]) {
+      document.getElementById('settlement-desc').textContent += special[node.name];
+    }
   const actions = game.getAvailableActions();
   const container = document.getElementById('settlement-actions');
   container.innerHTML = '';
 
   const labels = {
-    grease: '🛢 Grease Wheels (1 shaganappi)', trade: '🛒 Trade', repair: '🔧 Repair Cart', rest: '🏕 Rest', heal: '💊 Seek Healing', continue: '🚩 Continue West'
+    grease: '🛢 Grease Wheels (1 shaganappi)', trade: '🛒 Trade', repair: '🔧 Repair Cart', rest: '🏕 Rest', heal: '💊 Seek Healing',
+    forage: '🌿 Forage the Settlement Edges', rumours: '👂 Gather Rumours', theology: '⛪ Theology & Science', inspect: '⭐ NWMP Inspection',
+    continue: '🚩 Continue West'
   };
 
   actions.actions.forEach(act => {
