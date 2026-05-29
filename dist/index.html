@@ -551,7 +551,6 @@
     <span class="stat"><span class="stat-label">Food</span><span class="stat-value" id="s-food">20</span></span>
     <span class="stat"><span class="stat-label">Wear</span><span class="stat-value" id="s-wear">0</span></span>
     <span class="stat"><span class="stat-label">Crew</span><span class="stat-value" id="s-crew">Rested</span></span>
-    <span class="stat"><span class="stat-label">Squeal</span><span class="stat-value" id="s-squeal">Quiet</span></span>
   </div>
 
   <!-- ── Map Panel ───────────────────────────────────── -->
@@ -602,20 +601,6 @@
         <h2>Crew Status</h2>
         <div class="crew-status" id="crew-status"></div>
         <div class="crew-modifier" id="crew-modifier"></div>
-      </div>
-    </div>
-
-    <!-- Sunday Rest Overlay -->
-    <div class="overlay" id="sunday-overlay">
-      <div class="overlay-card">
-        <div class="day-header">⛪ Sunday Rest</div>
-        <h2 id="sunday-title">Day <span id="sunday-day"></span> — The Lord's Day</h2>
-        <div class="settlement-desc" id="sunday-desc">
-          The rhythm of the trail gives way to rest. One day in seven, the brigade stops.<br><br>
-          Trousers and morals are mended. Cart-wheels are greased afresh — along with good resolutions. The sweat of the trail washes away in the nearest creek.<br><br>
-          What will you do with your Sunday?
-        </div>
-        <div class="settlement-actions" id="sunday-actions"></div>
       </div>
     </div>
   </div>
@@ -726,10 +711,9 @@ const EVENTS = {
       { text: 'Slow down and pick a careful path (DC 10)', dc: 10, ok: 'You thread between the ruts. Slow, but the cart holds together.', bad: 'You misjudge a rut. The cart jolts hard. The axle cracks.', wear: 1 },
       { text: 'Push through at speed', dc: null, ok: '', bad: '', always: 'You push through. The cart takes the abuse.', alwaysWear: 1 }
     ]},
-    { id: 'prairie_fire', text: "A column of smoke rises from the south. Not a campfire — too wide, too grey. The careless dropping of a match, perhaps. The wind carries it toward the trail.\\n\\nThe grass here is dry as bone. If the fire reaches the trail ahead, you'll be forced to choose between waiting and detour. Either way, you lose time. But if it reaches the cart...", choices: [
-      { text: 'Burn a firebreak now — clear the grass ahead of you', dc: 13, ok: 'You light a careful backfire and watch it eat toward the oncoming blaze. The two fires meet and die. You stand in the smoke, coughing, surrounded by ash. But the cart is safe.', bad: 'The firebreak catches wrong. You're now fighting two fires. You barely contain it. Your eyebrows are singed and you lost an hour.', time: 1, crew: 'tired' },
-      { text: 'Flee at speed — outrun the fire', dc: 12, ok: 'You whip the ox forward and run. The smoke thickens behind you. You reach a creek bed just as the flames crest the ridge. You watch the fire sweep past, close enough to feel the heat.', bad: 'The fire is faster than it looks. The cart catches sparks. You beat out a smolder on the canvas tarp. The cart took damage and you lost supplies to the haste.', wear: 1, food: -1 },
-      { text: 'Turn back and find a detour', dc: null, ok: '', bad: '', always: 'You reverse course and find a route around the fire\'s path. It costs you a full day of backtracking. The fire passes to your north. You breathe ash for hours.', time: 1 }
+    { id: 'prairie_fire', text: "Smoke on the horizon. Not campfire smoke — a thick, grey-brown column rising from the prairie to the south.\n\nThe wind is carrying it your way. The grass here is dry. If the fire reaches the trail ahead, you'll have to turn back or find a way around. Either way, you lose time.", choices: [
+      { text: 'Push ahead and try to outrun it', dc: 13, ok: 'You beat the fire to a creek bed. You cross and watch the flames sweep past behind you. Close.', bad: 'The fire cuts the trail. You backtrack five miles to find a crossing. You lose a day and the ox is spooked.', time: 1, wear: 1 },
+      { text: 'Detour south to find a crossing', dc: null, ok: '', bad: '', always: 'You bushwhack through the grass to find the creek. It costs you half a day but you stay ahead of the smoke.', time: 1 }
     ]},
     { id: 'buffalo_herd', text: "The prairie shakes. Not thunder — hooves. A buffalo herd, maybe a thousand strong, moving east half a mile south of the trail.\n\nThe ground trembles. Your ox plants its eyes wide, refusing to move. The herd is too close to ignore and too large to cross.", choices: [
       { text: 'Wait for them to pass', dc: null, ok: '', bad: '', always: 'You wait. The herd takes three hours to pass. The ox trembles the whole time. When it\'s over, the trail is torn to ribbons. The ox is too shaken to go on — you make camp.', crew: 'tired', time: 2 },
@@ -775,96 +759,7 @@ const EVENTS = {
     { id: 'other_travelers', text: "You hear it before you see it — the unmistakable squeal of a Red River cart. Another driver, heading east. He waves as you approach.\n\n\"Fort Garry?\" he calls. \"Heard the Factor's paying premium for beaver.\"", choices: [
       { text: 'Exchange news and trade', dc: null, ok: '', bad: '', always: "You share the road for an hour. He tells you about the trail ahead — good grazing near Touchwood, but watch for mud after the hills. You trade a bison hide for a spare belt of ammunition. You part ways feeling less alone.", give: [{ name: 'Ammunition Belt', amt: 1 }] },
       { text: 'Nod and keep moving', dc: null, ok: '', bad: '', always: 'You wave back and keep walking. Every minute counts.' }
-    ]},
-    {
-      id: 'geometry_lesson',
-      text: "The mule stops dead. It eyes you with something that can only be described as mathematical malice.\n\nYou approach. The animal seems to behold in you its centre, conceives itself a radius, and proposes to pass the rest of its life in describing a complimentary circumference — its tail doing the tangents. It whirls. You lunge for the stirrup, catch one toe, and are dragged in a half-mile gallop that would put circus Mazeppas to shame.\n\nEventually this becomes tedious. You jump off, landing on all fours in the dust. The mule trots back, looking pleased with itself.",
-      choices: [
-        { text: 'Try to remount — you will master this beast (DC 12)', dc: 12, ok: 'Spur, bit, and will against mule, its heels and its knees. After a struggle, the animal submits. You ride west, victorious and slightly bruised.', bad: 'The mule wins. Again. You spend another hour fighting it. By the time you remount, half the day is gone and your crew is trying very hard not to laugh.', time: 1, crew: 'tired' },
-        { text: 'Lead it on foot — dignity is overrated', dc: null, ok: '', bad: '', always: 'You take the reins and walk. The mule follows, docile as a lamb now that it has made its point. Your crew says nothing. Their faces say everything.', crew: 'tired' }
-      ]
-    },
-    {
-      id: 'sick_mule',
-      text: "The mule is sick. Not tired — sick. Its head hangs low and its breathing is labored.\n\nYou dragged it behind the cart yesterday. It got worse. The animal can barely stand now. You're miles from the next settlement. There's green grass here, and water in the creek bed. But the wolves will come at night.",
-      choices: [
-        { text: 'Leave it here with grass and water — clip its ear as a property mark', dc: null, ok: '', bad: '', always: 'You cut a heap of green grass for its bed and board. Clip its ear for a property mark — someone may find it, or you may come back this way. The mule watches you leave with its long neck stretched out, loth to believe you would desert it. You cannot look back.', crew: 'tired', food: -1 },
-        { text: 'Try to nurse it for a day (Survival DC 13)', dc: 13, ok: 'You rest for a day, keeping the mule warm and watered. By morning it can stand. Not well, but well enough. You hitch up and move on, slower than before.', bad: 'A day of rest and the mule is no better. You have to leave it anyway — and now you have lost the time.', time: 2, crew: 'tired' }
-      ]
-    },
-    {
-      id: 'elk_hunt',
-      text: "Movement in the poplar line to the south. A bull elk — massive, antlers like a crown — breaks cover and runs.\n\nThe prospect of killing an elk is no more to be resisted than the glimpse of office flashed upon a hopeless nominee. Your rifle is in the cart. The elk's great leaps carry it through the poplar clumps with a grace that seems to mock your heavy boots.",
-      choices: [
-        { text: 'Chase on foot through the poplars (DC 13)', dc: 13, ok: 'You track his leaps through two miles of poplar. He shakes his antlers at you once — proud, defiant — then plunges into an alder swamp. You follow. The shot is clean. By evening the meat is cut and packed.', bad: 'You track him for miles. He shakes his antlers proudly and plunges into an alder swamp two miles out. You lose him in the thicket. You walk back to the cart empty-handed and aching.', food: 5, time: 1 },
-        { text: 'Take a long shot from here (DC 15)', dc: 15, ok: 'You steady the rifle against a poplar trunk. The crack echoes across the prairie. The elk stumbles, then drops. A clean kill at range. The crew whoops.', bad: 'The shot goes wide. The elk bounds away, antlers high, and vanishes into the trees. You reload and try again but he is long gone.', food: 5 },
-        { text: 'Let him go — you cannot spare the time', dc: null, ok: '', bad: '', always: 'You watch the elk disappear into the poplar line. There will be other chances. Maybe.' }
-      ]
-    },
-    {
-      id: 'antelope_hunt',
-      text: "Pronghorn on the horizon — a small herd, maybe two hundred yards south. They haven't seen you yet. Their white rumps catch the sun.\n\nAntelope are fast. Their quick, long jumps take them out of rifle-range before you can blink. You'll need to get close — or get lucky.",
-      choices: [
-        { text: 'Stalk closer through the grass (DC 14, costs time)', dc: 14, ok: 'You circle downwind, using every fold in the grass. The antelope graze, unaware. At last you are in range. The shot drops one. The herd explodes away, white rumps flashing. You dress the meat and return to the cart richer.', bad: 'They spot you at the last moment. Their quick, long jumps take them out of range before you can fire. You watch them bound across the prairie, out of reach and out of range. A long walk back to the cart.', food: 3, time: 1 },
-        { text: 'Take the shot from here (DC 16)', dc: 16, ok: 'A miracle of marksmanship. The antelope drops at extreme range. The crew stares. You try to look like you meant to do that.', bad: 'The ball falls short. The antelope bound away, white rumps flashing, and are gone before you can reload.', food: 3 },
-        { text: 'Let them run — too much effort', dc: null, ok: '', bad: '', always: 'You watch the pronghorn bound across the prairie. They are the fastest things on the grass. You have neither the time nor the patience today.' }
-      ]
-    },
-    { id: 'nwmp_patrol', text: "Three red-coated riders appear on the ridge ahead, moving toward you across the prairie. North West Mounted Police — their scarlet tunics vivid against the brown grass.\n\nThe Carlton Trail is under their jurisdiction. They patrol regularly between the forts — checking for smuggling, enforcing order, and making sure no one causes trouble on the Queen's road.\n\nThe sergeant raises a hand. You stop.", choices: [
-      { text: 'Greet them openly and offer to show your goods', dc: null, ok: '', bad: '', always: 'You pull aside your cart canvas and show your trade goods — bison hides and pelts, all legal. The sergeant nods, makes a note in his ledger, and asks about the trail ahead. You exchange news for ten minutes. They ride on. You feel safer knowing they are out here.' },
-      { text: 'Be polite but keep your cart closed — you have nothing to hide but value your privacy', dc: 11, ok: 'The sergeant seems satisfied with your answers. He asks if you have seen any trouble on the trail. You have not. He tips his hat and rides on.', bad: "Your reticence annoys the sergeant. He orders a brief search of your cart. They find nothing wrong — but they do find the shaganappi grease and spend twenty minutes asking about your wheel maintenance. You lose the better part of an hour. The squealing of your cart has clearly carried further than you thought.", time: 1 },
-      { text: 'Engage them in conversation and try to learn the trail conditions ahead', dc: 12, ok: 'The sergeant is happy to talk. He tells you the Touchwood Hills pass is clear but there has been trouble with mosquitoes near Qu\'Appelle. He warns that a brigade ahead lost two mules to alkali water. Useful intelligence.', bad: 'The sergeant is curt. He tells you nothing useful beyond "the trail is the trail." His men glance at your cart but do not stop. They ride on without another word.', crew: 'rested' }
-    ]},
-    { id: 'buffalo_hunt_council', text: "The prairie ahead is dark with carts. From every direction — the Settlement, the river lots, the missions — they have come. Red River carts by the hundreds, stretching five or six miles across the grass.\n\nThis is the great spring hunt. The council fire burns at the center. Ten captains will be chosen, each with ten soldiers. Ten guides. A chaplain. A camp flag to regulate the march.\n\nThe rules are strict: no hunting on the Sabbath. No straying from camp. Theft means your name called three times in the center of the camp, with the word 'thief' after it.\n\nThe chief of the expedition calls for volunteers.", choices: [
-      { text: 'Volunteer as a Hunter — you will ride with the hunting party', dc: null, ok: '', bad: '', always: 'You step forward as a hunter. The captain nods. You will ride with the hunting party when the herd is found.', setRole: 'hunter' },
-      { text: 'Volunteer as a Soldier — you will guard the camp and maintain order', dc: null, ok: '', bad: '', always: 'You step forward as a soldier. Ten soldiers under each captain, keeping order, guarding the camp, enforcing the rules.', setRole: 'soldier' },
-      { text: 'Volunteer as a Guide — you know the prairie (DC 12)', dc: 12, ok: 'The council accepts you as a guide. You will ride ahead, reading the grass and the wind, finding the herds.', bad: 'The council has enough guides. They thank you and ask you to serve as a soldier instead. You accept.', setRole: 'guide' }
-    ]},
-    { id: 'buffalo_hunt_march', text: "June 15th. The procession moves west.\n\nThe carts stretch five or six miles — a picturesque army of wood and hide. The camp flag flies. When it rises, the guide is chief. When it lowers, the captains govern the camp.\n\nYou are <ROLE_TEXT>. The prairie opens before you. The scouts ride ahead. Somewhere beyond the horizon, the buffalo wait.", choices: [
-      { text: 'Keep the pace steady — the herd will come', dc: null, ok: '', bad: '', always: 'The march continues. Days pass. The carts creak. The oxen plod. The flag flies and lowers, flies and lowers. The rhythm of the hunt settles into your bones.', advanceHunt: 2 },
-      { text: 'Push ahead with the scouts — find the herd faster (DC 13)', dc: 13, ok: 'You ride ahead with the scouts. On the third day, you see them — a dark mass on the northern horizon. The signal fire is lit. The hunt is close.', bad: 'You ride ahead but find nothing. The herd has moved further west. You return to the column empty-handed.', advanceHunt: 2 }
-    ]},
-    { id: 'buffalo_hunt_chase', text: "The herd is here. Thousands of buffalo, darkening the prairie to the north.\n\nThe signal fires have been lit. The hunters mount. The rules are clear: no firing until the charge begins. No straying. The Sabbath is sacred.\n\nThe chief gives the signal. The hunters surge forward.", choices: [
-      { text: 'Ride hard into the herd — maximum yield, maximum risk (DC 12)', dc: 12, ok: 'You ride into the thundering mass. Your rifle cracks again and again. Three cows go down. The meat will feed the camp for days.', bad: 'Too close. A bull charges. Your horse shies. You fire wild and barely escape. You return to camp with nothing but a story.', huntYield: 'high' },
-      { text: 'Hunt the edges — safer, steady yield (DC 10)', dc: 10, ok: 'You work the edges of the herd, picking your shots. Two cows and a young bull. Clean kills, no waste.', bad: 'The edge of the herd is chaos. You fire twice and miss both times. The herd moves on.', huntYield: 'medium' },
-      { text: 'Guard the camp — keep order, let the hunters hunt (DC 9)', dc: 9, ok: 'You hold the camp. A soldier tries to sneak out — you stop him. The hunt returns successful and the camp is orderly.', bad: 'A fight breaks out over hunting territory. You try to intervene and take a fist to the jaw. The captains sort it out.', huntYield: 'low' }
-    ]},
-    { id: 'buffalo_hunt_return', text: "The hunt is over. The meat is cut, dried, packed onto the carts. A total of 1,089,000 pounds — enough to feed the Settlement for months.\n\nBut the meat is heavy. The carts groan. The journey back is slower than the journey out. And the meat will spoil if you delay.\n\nThe captains call for order. The flag rises. The return march begins.", choices: [
-      { text: 'Push hard — get the meat home before it spoils (DC 11)', dc: 11, ok: 'You drive the column hard. The carts creak and groan but hold. The meat is hung to dry at every camp. By the time you reach the Settlement, the pemmican is packed and the carts are full.', bad: 'A wheel breaks under the weight. A cart overturns. Meat spills across the prairie. You salvage what you can, but the loss is felt.', huntComplete: 'partial' },
-      { text: 'Steady pace — preserve the carts, accept some loss', dc: null, ok: '', bad: '', always: 'You keep a steady pace. The carts hold. Some meat is lost to the heat, but the carts arrive intact. The Settlement will eat well this winter.', huntComplete: 'full' }
-    ]},
-    { id: 'brigade_organization', text: "You come upon a gathering of carts at a trail junction — not a settlement, but a natural meeting point where the trail widens and the grass is good.\n\nDrivers are talking. Some are heading the same way you are. The idea forms naturally: travel together, share the risks, pool the knowledge.\n\nIt has been done before. Ten carts to a brigade. Three drivers per ten carts. An overseer elected by all. A camp flag that regulates the march — when it flies, the guide is chief. When it lowers, the captains govern.\n\nThe question is whether you join them, or whether you ask them to join you.",
-  choices: [
-    { text: 'Join an existing brigade — safety in numbers', dc: null, ok: '', bad: '', always: 'You join the brigade. The overseer welcomes you. You learn the rules: no straying from camp, no hunting on the Sabbath, and the penalties — first offense, your saddle cut up; second, your coat; third, the lash. Travel is slower, but you are not alone.', brigadeBonus: true },
-    { text: 'Propose forming your own brigade — you will be the captain', dc: 13, ok: 'Your cart is in good order, your food stores adequate, and your manner convincing. Three other drivers agree to join your brigade. You elect a guide, raise a flag, and set out westward as an organized company. The flag flies. You are the captain.', bad: 'Not enough drivers are interested. Most prefer to travel alone, or their routes diverge. You press on solo — but the idea stays with you. There will be other junctions.', brigadeBonus: true },
-    { text: 'Decline — you travel faster alone', dc: null, ok: '', bad: '', always: 'You nod politely and move on. The brigade means shared decisions, shared pace, and shared risk. You are your own captain. The trail ahead is yours alone.' }
-  ]},
-  { id: 'crew_recruitment', text: "A figure sits alone at a campfire by the trail apart from the other travellers, cooking something that smells of wild game and prairie herbs.\n\nAs you approach, the figure looks up. Sharp eyes. Weathered face. A hunter, by the look of the rifle leaning against the saddle.\n\n\"You are heading west?\" the hunter asks. \"So am I. Travel is safer with company.\"", choices: [
-    { text: 'Invite them to join your crew', dc: 11, ok: '"Wise choice." The hunter stands, extends a hand. "Emile. I know every trail between here and the Saskatchewan. The prairie talks — you just have to listen." You gain a skilled hunter.', bad: 'The hunter considers, then shakes their head. "I work alone. But I wish you safe travel." They return to their fire. You move on alone.', recruitCrew: 'emile' },
-    { text: 'Nod politely and move on — you travel alone', dc: null, ok: '', bad: '', always: 'You tip your hat and keep walking. The hunter watches you go. The trail is long, and not everyone shares the same destination.' },
-    { text: 'Ask if they know the trail ahead (no recruitment)', dc: 9, ok: 'The hunter tells you about the next stretch — good water at the crossing, but watch for mud after the hills. "There is trouble between here and there," they say. "But you look like you can handle trouble."', bad: 'The hunter shrugs. "The trail is the trail. You will find out." They return to their fire.', crew: 'rested' }
-  ]},
-  { id: 'crew_death', text: "Your crew member <CREW_NAME> has been getting worse. The fever that started days ago has not broken. This morning, they cannot stand.\n\nThe trail offers no mercy — no surgeon, no priest, no settlement within days. Just the prairie and the sun and the slow arithmetic of infection.", choices: [
-    { text: 'Stay and care for them (Survival DC 13)', dc: 13, ok: 'You stay. Day and night, you keep them cool, keep them hydrated, keep them breathing. On the fourth day, the fever breaks. They will live. But you have lost four days.', bad: 'You do everything you can. It is not enough. On the third night, they die quietly. You bury them in the morning — a cairn of prairie stones, a prayer you half-remember. The trail stretches ahead, emptier than before.', crewDeath: true, time: 4 },
-    { text: 'Make them comfortable and keep moving', dc: null, ok: '', bad: '', always: 'You wrap them in blankets, place them in the cart, and keep moving. Every bump is an agony. On the second day, they die. You bury them by the trail and stand for a long time before hitching the ox.', crewDeath: true }
-  ]},
-  { id: 'fort_carlton_encounter', text: "Fort Carlton rises from the riverbank — a major HBC depot on the North Saskatchewan. The palisade walls are solid, the trade goods plentiful, and the Factor is known to be fair.\n\nBut the pemmican stores are declining. The Company feels the pressure. A clerk mentions that the buffalo are harder to find each year, and the brigades are going further west.\n\nThe fort is a crossroads — Métis traders, HBC men, Cree hunters, and travellers like you all pass through here.",
-  choices: [
-    { text: 'Trade at the fort — prices may not be this good further west', dc: null, ok: '', bad: '', always: 'You trade your bison hides for supplies. The Factor gives you a fair price — better than you would get at a smaller post. You leave with a full cart and a lighter load of trade goods.', food: 4 },
-    { text: 'Gather news from the traders about the trail ahead', dc: null, ok: '', bad: '', always: 'You spend an hour talking to the traders. The trail west is open but the Touchwood Hills have been dry. Water will be scarce. A brigade ahead lost time searching for a passable route. Good to know.', crew: 'rested' },
-    { text: 'Rest and repair — the cart has taken a beating', dc: null, ok: '', bad: '', always: 'You rest for a day at the fort. The cart is repaired, the ox is reshod, and you sleep under a roof for the first time in weeks. The wear on your cart decreases.', wear: -2, time: 1 }
-  ]},
-  { id: 'la_belle_vallee', text: "The guide calls it La Belle Vallée. You cross a valley that looks like the deserted channel of a beautiful river — as if the Upper Mississippi had dried up and seas of long green grass filled its place.\n\nThe grass is waist-high and ripples in the wind like water. Wildflowers dot the slope. Birds you have never seen rise from the tall grass in clouds.\n\nIt is, without question, the most beautiful place you have seen on the trail.",
-  choices: [
-    { text: 'Stop and take it in — some things are worth the time', dc: null, ok: '', bad: '', always: 'You stop the cart and walk into the valley. The grass parts around you. The wind carries the scent of wildflowers and warm earth. For a moment, the trail and its troubles feel very far away. The crew is quiet. Some beauty needs no words.', crew: 'rested', time: 1 },
-    { text: 'Make camp here tonight — the grass is good for the ox', dc: null, ok: '', bad: '', always: 'You make camp in the valley. The ox grazes on the rich grass. The crew sleeps well. In the morning, the valley is misty and gold, and you leave reluctantly.', crew: 'rested', time: 1 },
-    { text: 'Press on — beauty does not fill the food barrel', dc: null, ok: '', bad: '', always: 'You pause at the top of the valley, take one long look, and keep walking. The trail waits for no one. But the image stays with you — green grass like a sea, and the sky above it.' }
-  ]},
-  { id: 'assiniboine_milestone', text: "From the last of a range of high hills, you catch sight — for the first time — of the faint blue line in the northern horizon that marks the course of the Assiniboine.\n\nBetween you and the river, innumerable lakes — some salt and some fresh — shallow ones fringed with green or black rushes, and deep ones wooded to the banks. The land is changing. The prairie is giving way to something else.\n\nYou are further west than you have ever been.",
-  choices: [
-    { text: 'Take in the view — this is a milestone', dc: null, ok: '', bad: '', always: 'You stand on the hilltop and look north. The blue line of the Assiniboine. The lakes glittering in the sun. The trail has brought you here, to this moment. You are not the same person who left Fort Garry.', crew: 'rested' },
-    { text: 'Push on — the river will still be there tomorrow', dc: null, ok: '', bad: '', always: 'You note the landmark and keep moving. The Assiniboine is a guide now — you follow it west. Every mile brings you closer to Edmonton.' }
-  ]}
+    ]}
   ],
   river_valley: [
     { id: 'spring_flooding', text: "The river is high. Not impassable, but the ford is muddy and the current is stronger than you'd like. You can see the trail on the other side — a dark line through the willows.\n\nYour cart is heavy. The ox is steady but not eager.", choices: [
@@ -886,10 +781,9 @@ const EVENTS = {
       { text: 'Risk the crumbling edge (DC 11)', dc: 11, ok: 'You guide the ox along the very edge. The bank holds. You breathe again on solid ground.', bad: 'The bank gives way under the cart\'s weight. The cart tilts, one wheel over the water. You grab the ox, haul back, and unload half the cargo before you can right it. Everything is muddy. Some goods are ruined.', wear: 1, food: -1 },
       { text: 'Detour through the willows', dc: null, ok: '', bad: '', always: 'You take the long way through the willows. The cart is scratched by branches but intact. It costs you half a day.', time: 1 }
     ]},
-    { id: 'mosquito_siege', text: "The air turns thick with mosquitoes. Not the usual nuisance — a living cloud that rises from the alkaline shallows with every step. Your ox stamps and twists. You can barely draw breath without swallowing them.\\n\\nThe water here has a bitter, salty taste. Ruined the tea this morning. You can see the white alkali crust along the marsh edge. The mules — everyone's developing what Joseph darkly calls 'an elementary canal enlargement.'", choices: [
-      { text: 'Burn green wood for smoke (risk: prairie fire)', dc: 12, ok: 'The smoke drives them back. You camp in a haze of green-willow smoke, coughing but unbitten. The horses settle.', bad: 'The smoke works too well — a spark catches the dry grass upwind. You scramble to beat it out before it spreads. The mosquitoes return the moment the smoke clears.', crew: 'tired', time: 1 },
-      { text: 'Apply mud and grease, push through', dc: null, ok: '', bad: '', always: 'You smear your face and hands with river mud mixed with axle grease. It is not dignified. It works. The mosquitoes can\'t bite through the paste. You march through the worst of it, a greased phantom on the prairie.', crew: 'tired' },
-      { text: 'Move camp to higher ground immediately', dc: null, ok: '', bad: '', always: 'You abandon the marsh-side camp and haul everything uphill. A quarter mile from the water, the mosquitoes thin. You lose half a day but save your sanity.', time: 1 }
+    { id: 'mosquito_plague', text: "The mosquitoes are unbearable. Clouds of them rise from the river shallows with every step. Your ox twitches and stamps. You can barely see through the swarm.\n\nYou have a mosquito net in the cart, but it won't cover the ox. And the smoke from a fire only does so much.", choices: [
+      { text: 'Push through — they\'ll thin out', dc: null, ok: '', bad: '', always: 'You grit your teeth and walk. The mosquitoes thin after a mile. By evening you\'re covered in bites but through the worst of it.', crew: 'tired' },
+      { text: 'Make camp early and build a smudge fire', dc: null, ok: '', bad: '', always: 'You build a smudge fire from green willow branches. The smoke drives the mosquitoes back. You lose the rest of the day but sleep without being eaten alive.', time: 1, crew: 'rested' }
     ]},
     { id: 'broken_ferry', text: "You reach the ferry crossing — and find the ferry on the wrong side of the river. The operator is gone. Maybe he'll be back tomorrow. Maybe not.\n\nThe ford here is deep and the current is strong. But you can see the trail on the other side.", choices: [
       { text: 'Wait for the ferry operator', dc: null, ok: '', bad: '', always: 'You wait. The operator shows up the next morning, apologetic. He poles you across for free. You lose a day.', time: 1 },
@@ -902,16 +796,7 @@ const EVENTS = {
     { id: 'flash_flood', text: "The sky to the west goes dark. Not a thunderhead — a wall of cloud rolling fast. Then the rain hits. Not a drizzle — a deluge.\n\nWithin minutes the river rises. The trail along the bank floods. You need to get to higher ground now.", choices: [
       { text: 'Abandon the trail and head for high ground (DC 12)', dc: 12, ok: 'You whip the ox up the ridge. Water surges behind you but you make it to high ground. You wait out the flood. The trail is gone when the water recedes — you have to find a new path.', bad: 'The ox balks at the slope. By the time you get moving, the water is ankle-deep and rising. You make it to high ground but the cart takes on water. Supplies ruined.', food: -2, time: 1 },
       { text: 'Try to outrun it along the bank', dc: 14, ok: 'You push hard along the bank. The water rises behind you but you stay ahead of it. You reach the next rise just as the flood crests. Close.', bad: 'The water catches you. The cart floats for a terrifying moment before the ox finds purchase. You lose everything that wasn\'t tied down.', wear: 2, food: -3 }
-    ]},
-    {
-      id: 'crane_hunt',
-      text: "Sandhill cranes — huge birds, their grey bodies rising from the hollows as you come up over the nearest hill. They are delicious to eat and worth creeping a hundred rods to shoot.\n\nBut they see you. The ungainly majesties put on airs and stalk about on distant sand-hills, mocking you with their clanging cry. Their white, van-like wings grow fainter in the distance.",
-      choices: [
-        { text: 'Creep a hundred rods through the grass (DC 12 Stealth)', dc: 12, ok: 'You belly-crawl through the grass, inch by inch. The cranes stalk and preen, unaware. At last you are in range. The shot echoes across the valley. One bird drops. The rest clang and scatter. By evening you are eating well.', bad: 'A careless step. The cranes explode from the grass with a clanging cry that echoes off the hills. You fire wild. They are gone — white specks in the distant air. You walk back to the cart covered in grass stains and shame.', food: 3, time: 1 },
-        { text: 'Try a long shot (DC 15)', dc: 15, ok: 'You steady your aim at the very edge of range. The crack sends the cranes scattering — but one tumbles. Clean hit. The crew cheers from the cart.', bad: 'The shot falls short. The cranes mock you with their clanging cry as they wheel away. Faint white specks in the distance.', food: 3 },
-        { text: 'Let them be — you have other concerns', dc: null, ok: '', bad: '', always: 'You watch the cranes stalk on their distant hill. Their clanging cry carries across the valley. There will be other chances.' }
-      ]
-    }
+    ]}
   ],
   wooded: [
     { id: 'fallen_tree', text: "A poplar has fallen across the trail. It's not large — maybe two feet through — but it's enough to block the cart. The ground around it is soft.\n\nYour axe is in the cart. It'll take time, but you can clear it.", choices: [
@@ -964,30 +849,12 @@ const EVENTS = {
     { id: 'lost_in_fog', text: "Fog rolls in from the west — thick, grey, disorienting. Within minutes you can barely see the ox in front of you.\n\nThe trail is somewhere ahead. Or maybe you've already passed it. In fog like this, every direction looks the same.", choices: [
       { text: 'Keep walking — the trail must be close (DC 12)', dc: 12, ok: 'You pick a direction and walk. After thirty minutes the fog thins and you find the trail. You were closer than you thought.', bad: 'You walk for an hour in the wrong direction. When the fog lifts, you\'re off the trail entirely. You have to backtrack.', time: 2, crew: 'tired' },
       { text: 'Wait for the fog to lift', dc: null, ok: '', bad: '', always: 'You hobble the ox and wait. The fog lifts after two hours. You\'ve lost time but at least you know where you are.', time: 2 }
-    ]},
-    {
-      id: 'eagle_encounter',
-      text: "A large grey eagle sails along the air and hovers high above you — riding the thermals from the coulee below, wings motionless. It watches with ancient eyes.\n\nThe uplands stretch in every direction. The eagle hangs in the sky like a living thing carved from stone. Your rifle is in the cart. The bird is far — but not impossible.",
-      choices: [
-        { text: 'Take the shot (DC 14)', dc: 14, ok: 'The rifle cracks. The eagle tumbles, fluttering three or four times its own wing-spread — then recovers and flies off into upper air. You see it hanging over the river later, without an apparent stroke of its pinions, steadily poised in the same spot. A near thing. The crew is impressed.', bad: 'The ball goes wide. The eagle doesn\'t even flinch. It circles once more, then rides the wind west. You reload and watch it go.', crew: 'rested' },
-        { text: 'Watch it — some things are not meant to be shot', dc: null, ok: '', bad: '', always: 'You stand and watch the eagle circle. It hangs in the air without a stroke of its pinions, balanced against the wind. Then it rides the thermals west, toward the mountains. The crew is quiet. Some moments on the trail are worth more than meat.', crew: 'rested' }
-      ]
-    },
-    {
-      id: 'spy_encounter',
-      text: "A lone rider approaches from the west — hooded, cautious, his horse picking its way along the ridge. He pulls up when he sees you.\n\n\"Where do you come from?\" you call out.\n\n\"It is not necessary that I tell you.\" His eyes are shadowed under the hood.\n\n\"Are you with us?\" you ask. \"Or against us?\"\n\n\"I do not want to get into bad cloths,\" he says — I don\'t want to get involved. He watches you for a long moment, then turns his horse and rides west without another word.",
-      choices: [
-        { text: 'Let him go — not your concern', dc: null, ok: '', bad: '', always: 'You watch the rider disappear into the west. You will never know whose side he was on. The prairie keeps its secrets.' },
-        { text: 'Follow at a distance (DC 13)', dc: 13, ok: 'You follow the rider for two miles. He meets with two others at a coulee — a brief exchange, then they scatter in three different directions. Spies, certainly. But for whom? You return to your cart with more questions than answers.', bad: 'The rider spots you following. He doubles back, demands to know why you are trailing him. You make an excuse — looking for lost cattle — but he is not fooled. He rides off warning you not to follow. The rest of the day you feel watched.', crew: 'tired', time: 1 },
-        { text: 'Shout after him — demand he identify himself', dc: 10, ok: 'You shout. The rider stops, turns, and studies you. After a long pause, he says: \"I am no one. And you should mind your own business, voyageur.\" He rides on. But you noticed — his horse was fresh. He had not been riding long.', bad: 'The rider spurs his horse and vanishes over the ridge. Your shouting echoes across the empty hills. The crew looks at you like you have lost your mind. Perhaps you have.' }
-      ]
-    }
+    ]}
   ],
   river: [
-    { id: 'major_crossing', text: "The river stretches wide before you. The current is steady — not fast, but you can see debris moving below the surface. The ford is marked by willow poles on both banks, but the water is higher than when they were planted.\\n\\nYou have options. The ford is passable — probably. The cajeux rope-ferry is here but it'll cost you. Or you can do what some of the old hands do: take the wheels off, lash them together concave side up, and float the cart across on its own wheels.", choices: [
-      { text: 'Ford the river (Survival DC 12)', dc: 12, ok: 'The ox finds the shallow channel. Water laps at the cart bed but nothing shifts. You reach the far bank soaked but whole.', bad: 'Midway across, a wheel drops into a hole. The cart tilts. You wrestle it level but the axle cracks. Some supplies get wet.', wear: 1, food: -2 },
-      { text: 'Take the cajeux/ferry — costs supplies', dc: null, ok: '', bad: '', always: 'The ferry operator poles you across for a price. He takes a bison hide and some pemmican for his trouble. Three hours and you\'re across with a dry cart.', food: -3 },
-      { text: 'Build a wheel-raft (Survival DC 14, 2 hours)', dc: 14, ok: "You remove the wheels — an hour of work — then lash them together concave side up. The cart body goes on top. You pole across on your own invention, dry and proud. Four hours total, but nothing is wet.", bad: "The raft is clumsy. Mid-river the wheels shift. You get wet getting everything re-lashed on the far bank. It works, but not the way you planned.", food: -1, time: 2 }
+    { id: 'major_crossing', text: "The river stretches wide before you. The current is visible — not fast, but steady. The ford is marked by willow poles on both banks, but the water is higher than usual.\n\nYou're carrying a tarp that could make a raft. But that takes hours. The ford is passable — probably.", choices: [
+      { text: 'Ford the river (Survival DC 12)', dc: 12, ok: 'The ox finds the shallow channel. Water laps at the cart bed but nothing shifts. You reach the far bank soaked but whole.', bad: 'Midway across, a wheel drops into a hole. The cart tilts. You wrestle it level but the axle cracks. Some supplies get wet.', wear: 1, food: -1 },
+      { text: 'Build a cart-raft (Survival DC 14)', dc: 14, ok: "You dismantle, wrap, and lash. The raft floats. Three hours later, you're across with a dry cart and your patience intact.", bad: 'The raft is clumsy. Mid-river it spins. You get wet and embarrassed but make it across.', food: -1, need: 'Canvas Tarp' }
     ]}
   ]
 };
@@ -1045,11 +912,9 @@ function createGame(seed) {
 
   const S = {
     day: 1, month: 6, season: 'summer', crew: 'rested',
-    food: 30, wear: 0, squealLevel: 0, node: 0, segmentDay: 0, travelDaysWithoutRest: 0,
-    over: false, won: false, pendingEvent: null, pendingSettlement: null, pendingSundayRest: false,
-    score: 0, camps: 0, eventsResolved: 0, tradesMade: 0,
-    buffaloHuntStage: 0, buffaloHuntRole: null, buffaloHuntYield: 0, brigade: false,
-    crewDetail: { members: [] }
+    food: 12, wear: 0, node: 0, segmentDay: 0, travelDaysWithoutRest: 0,
+    over: false, won: false, pendingEvent: null, pendingSettlement: null,
+    score: 0, camps: 0, eventsResolved: 0, tradesMade: 0
   };
 
   const narrative = [];
@@ -1075,7 +940,7 @@ function createGame(seed) {
       S.over = true;
       say("You have run out of food.\n\nThe trail stretches ahead, but your crew cannot go on. Weak, you make camp and fire smoke signals. Whether anyone comes in time is another story.\n\n— Game Over —");
     }
-    if (S.wear >= 5) {
+    if (S.wear >= 4) {
       S.over = true;
       say("The cart breaks down completely.\n\nThe axle snaps. The wheel collapses. You stand on the prairie with your supplies scattered. Fort Edmonton is still days away.\n\n— Game Over —");
     }
@@ -1102,12 +967,11 @@ function createGame(seed) {
     if (action === 'continue') { say("You pack up and head west. The trail awaits."); return; }
     if (action === 'rest') {
       S.crew = 'rested';
-      S.food += 2;
+      S.food -= 1;
       S.travelDaysWithoutRest = 0;
-      S.squealLevel = 0;
       S.day++;
       advanceMonth();
-      say("You rest for the day. The crew recovers. The settlement provides food and rest. +2 Food.");
+      say("You rest for the day. The crew recovers. You consume 1 food.");
     }
     if (action === 'repair') {
       const shagItem = cart.find(i => i.name === 'Shaganappi');
@@ -1123,105 +987,31 @@ function createGame(seed) {
       }
     }
     if (action === 'heal') { S.crew = 'rested'; say("The nuns tend to your crew. Hot soup, clean bandages. You feel renewed."); }
-    if (action === 'grease') {
-      const shagItem = cart.find(i => i.name === 'Shaganappi');
-      if (shagItem && shagItem.count > 0) {
-        shagItem.count--;
-        S.squealLevel = 0;
-        say("You grease the cart wheels with shaganappi and tallow. The terrible squealing stops. The prairie is quiet again.");
-      } else {
-        say("You have no shaganappi to grease the wheels. The cart continues to shriek.");
-      }
-    }
     if (action === 'trade') {
       const tg = cart.find(i => i.type === 'trade' && i.count > 0);
       if (tg) {
         tg.count--;
-        const foodGain = Math.floor(rand() * 5) + 6; // 6-10 food
+        const foodGain = tg.wt >= 8 ? 4 : 3; // hides worth more than pelts
         S.food += foodGain;
         S.tradesMade++;
         say(`You trade a ${tg.name} for supplies. +${foodGain} Food.`);
       }
       else say("You browse the goods, but have nothing to trade.");
     }
-    if (action === 'forage') {
-      const foodFound = Math.floor(rand() * 4) + 1; // 1-4 food
-      S.food += foodFound;
-      S.day++; advanceMonth();
-      say(`You forage the settlement edges — wild berries, roots, whatever grows this close to the river. +${foodFound} Food. A day well spent.`);
-    }
-    if (action === 'rumours') {
-      const rumours = [
-        "A traveller mentions good grazing near the next water crossing. The horses ahead found sweet grass.",
-        "You hear that the Touchwood Hills pass is muddy but passable. The brigade ahead lost time but not supplies.",
-        "Someone mentions NWMP at the next fort are checking every cart. Best to have your goods in order.",
-        "A trader warns: alkaline water in the next stretch. Fill your barrel before you reach it."
-      ];
-      const r = rumours[Math.floor(rand() * rumours.length)];
-      say(`You spend an hour trading stories and news with the other travellers. "${r}"`);
-    }
-    if (action === 'theology') {
-      say("The man of science is here again — dividing his time between Paul's Epistles and the compound microscope. You sit through a theology lecture that touches on grace, geology, and the nature of moss. Your morals are mended, if not your trousers.");
-    }
-    if (action === 'inspect') {
-      const hasTrade = cart.some(i => i.type === 'trade' && i.count > 0);
-      if (hasTrade) {
-        say("The NWMP sergeant inspects your cart with professional thoroughness. He notes your trade goods, checks for contraband, and finds everything in order. He stamps your travel papers and wishes you a safe journey. You feel oddly protected.");
-      } else {
-        say("The NWMP sergeant inspects your cart. He finds nothing but supplies and tools. He seems almost disappointed. 'No trade goods?' he asks. You shake your head. He waves you through.");
-      }
-    }
-  }
-
-  function sundayAction(action) {
-    S.pendingSundayRest = false;
-    // Sunday is free — no food cost for resting this day
-    if (action === 'mend') {
-      S.wear = Math.max(0, S.wear - 1);
-      say("You mend trousers, patch the canvas, bind a cracked spoke with shaganappi. The cart wear decreases. Small repairs, carefully done.");
-    }
-    if (action === 'grease') {
-      S.squealLevel = 0;
-      say("You grease the cart-wheels afresh. The terrible squealing stops. The prairie is quiet again — at least until Monday.");
-    }
-    if (action === 'bathe') {
-      S.crew = 'rested';
-      say("You wash away the sweat of the trail in the nearest creek. The water is cold. The crew feels renewed.");
-    }
-    if (action === 'theology') {
-      say("The man of science divides his time between Paul's Epistles and the compound microscope. Joseph offers a theological disputation on the nature of grace. You are not sure who wins, but the day is passed in good company.");
-    }
-    if (action === 'hymns') {
-      S.crew = 'rested';
-      S.travelDaysWithoutRest = 0;
-      say("After supper, the crew gathers about the camp-fire. Old Hundred. Balerma. Dundee. Ward. The voices carry across the prairie into the vast, indifferent sky. For a moment, the trail feels like home.");
-    }
-    if (action === 'skip') {
-      say("You push on. The trail does not rest, and neither will you. The crew murmurs but obeys.");
-    }
   }
 
   function getSettlementActions(n) {
     const a = [];
-    if (n.type === 'hbc') a.push('grease', 'trade', 'repair', 'rest', 'rumours');
-    else if (n.type === 'metis') a.push('grease', 'trade', 'rest', 'forage');
-    else if (n.type === 'trading') a.push('grease', 'trade', 'rest', 'rumours');
-    else if (n.type === 'mission') a.push('grease', 'rest', 'heal', 'theology');
-    else if (n.type === 'nwmp') a.push('grease', 'trade', 'rest', 'inspect');
+    if (n.type === 'hbc') a.push('trade', 'repair', 'rest');
+    else if (n.type === 'metis') a.push('trade', 'rest');
+    else if (n.type === 'trading') a.push('trade', 'rest');
+    else if (n.type === 'mission') a.push('rest', 'heal');
+    else if (n.type === 'nwmp') a.push('trade', 'rest');
     a.push('continue');
     return a;
   }
 
   function pickEvent() {
-    // Buffalo hunt chain: force next stage event on plains
-    if (S.buffaloHuntStage > 0 && S.buffaloHuntStage < 4 && NODES[S.node].terrain === 'plains') {
-      const stageNames = ['council', 'march', 'chase', 'return'];
-      const huntEventId = 'buffalo_hunt_' + stageNames[S.buffaloHuntStage - 1];
-      const pool = getEventsForTerrain('plains');
-      const huntEv = pool.find(e => e.id === huntEventId);
-      if (huntEv) return huntEv;
-    }
-    // Normal event selection
     if (rand() > 0.35) return null; // 65% chance of event
     const pool = getEventsForTerrain(NODES[S.node].terrain);
     return pool[Math.floor(rand() * pool.length)];
@@ -1247,46 +1037,6 @@ function createGame(seed) {
     if (ch.crew) { S.crew = ch.crew; result.effects.push(`Crew: ${ch.crew}`); }
     if (ch.give) { ch.give.forEach(g => { const item = cart.find(i => i.name === g.name); if (item) { item.count += g.amt; result.effects.push(`+${g.amt} ${g.name}`); } }); }
     if (ch.extraProgress) { S.segmentDay += ch.extraProgress; result.effects.push(`+${ch.extraProgress} progress`); }
-    // Buffalo hunt effects
-    if (ch.setRole) { S.buffaloHuntRole = ch.setRole; S.buffaloHuntStage = 1; }
-    if (ch.advanceHunt) { S.buffaloHuntStage = ch.advanceHunt; }
-    if (ch.huntYield) {
-      const yieldAmt = ch.huntYield === 'high' ? 50 : ch.huntYield === 'medium' ? 30 : 15;
-      S.food += yieldAmt;
-      result.effects.push(`+${yieldAmt} Food (buffalo hunt)`);
-      S.buffaloHuntYield = yieldAmt;
-    }
-    if (ch.huntComplete) {
-      S.buffaloHuntStage = 4;
-      if (ch.huntComplete === 'partial') { S.food = Math.max(0, S.food - 10); result.effects.push('-10 Food (spoilage)'); }
-    }
-    if (ch.brigadeBonus) { S.brigade = true; result.effects.push('Joined brigade (+1 all rolls, -1 speed)'); }
-    if (ch.recruitCrew) {
-      const crewData = {
-        emile: { name: 'Emile Laroque', role: 'Hunter', health: 3, morale: 'steady', skills: { survival: 2 }, alive: true },
-        josette: { name: 'Josette Fontaine', role: 'Trader', health: 3, morale: 'sharp', skills: { trade: 2 }, alive: true },
-        celeste: { name: 'Marie-Celeste Morin', role: 'Elder', health: 2, morale: 'deep', skills: { spirit: 2 }, alive: true },
-        jb: { name: 'JB Bruyere', role: 'Scout', health: 3, morale: 'restless', skills: { navigation: 2 }, alive: true }
-      };
-      const newCrew = crewData[ch.recruitCrew];
-      if (newCrew && !S.crewDetail.members.some(m => m.name === newCrew.name)) {
-        S.crewDetail.members.push({...newCrew});
-        result.effects.push('+ Crew: ' + newCrew.name + ' (' + newCrew.role + ')');
-      }
-    }
-    if (ch.crewDeath) {
-      const alive = S.crewDetail.members.filter(m => m.alive);
-      const sickest = alive.sort((a, b) => a.health - b.health)[0];
-      if (sickest) {
-        if (ch.dc !== null && !result.success) {
-          sickest.alive = false; sickest.health = 0;
-          result.effects.push(sickest.name + ' has died.');
-        } else if (ch.dc === null) {
-          sickest.alive = false; sickest.health = 0;
-          result.effects.push(sickest.name + ' has died.');
-        }
-      }
-    }
     return result;
   }
 
@@ -1299,14 +1049,12 @@ function createGame(seed) {
     const wearChance = { plains: 0.12, river_valley: 0.18, wooded: 0.22, uplands: 0.25, river: 0.08 };
     if (rand() < (wearChance[NODES[S.node].terrain] || 0.20)) {
       S.wear++;
-      if (S.wear >= 5) { S.over = true; say("Your cart has broken down beyond repair. The trail ends here.\n\n— Game Over —"); }
+      if (S.wear >= 4) { S.over = true; say("Your cart has broken down beyond repair. The trail ends here.\n\n— Game Over —"); }
     }
     // Crew degradation: every 3 travel days without rest → tired, every 5 → exhausted
     S.travelDaysWithoutRest++;
     if (S.travelDaysWithoutRest >= 5 && S.crew !== 'exhausted') { S.crew = 'exhausted'; }
     else if (S.travelDaysWithoutRest >= 3 && S.crew === 'rested') { S.crew = 'tired'; }
-    // Cart squeal: ungreased wheels get louder each day
-    S.squealLevel = Math.min(3, S.squealLevel + 1);
     const stepLog = [];
 
     if (S.segmentDay >= currentDist) {
@@ -1315,7 +1063,7 @@ function createGame(seed) {
       if (S.node >= NODES.length - 1) {
         S.over = true;
         const hasTrade = cart.some(i => i.type === 'trade' && i.count > 0);
-        S.won = hasTrade && S.wear < 5;
+        S.won = hasTrade && S.wear < 4;
         S.score = calcScore();
         const tgCount = cart.filter(i => i.type === 'trade' && i.count > 0).reduce((s, i) => s + i.count, 0);
         if (S.won) {
@@ -1337,22 +1085,15 @@ function createGame(seed) {
       } else {
         const flavor = getTrailFlavor(NODES[S.node].terrain);
         const progress = `${S.segmentDay}/${currentDist} days to ${NODES[S.node + 1].name}`;
-        let squealText = '';
-        if (S.squealLevel >= 2) squealText = '\n\nYour cart wheels shriek across the prairie.';
-        say(`Day ${S.day} — On the trail (${progress})\n\n${flavor}${squealText}`);
+        say(`Day ${S.day} — On the trail (${progress})\n\n${flavor}`);
       }
     }
-    // Sunday Rest: every 7th day, if not at a settlement
-    if (S.day % 7 === 0 && !S.pendingSettlement && !S.over) {
-      S.pendingSundayRest = true;
-      stepLog.push({ action: 'sundayRest' });
-    }
-
     checkGameOver();
     return stepLog;
   }
 
   function chooseEventChoice(choiceIndex) {
+    if (!S.pendingEvent) return null;
     const ev = S.pendingEvent; S.pendingEvent = null; S.eventsResolved++;
     const result = resolveChoice(ev, choiceIndex);
     say(result.text);
@@ -1363,7 +1104,7 @@ function createGame(seed) {
       if (S.node >= NODES.length - 1) {
         S.over = true;
         const hasTrade = cart.some(i => i.type === 'trade' && i.count > 0);
-        S.won = hasTrade && S.wear < 5;
+        S.won = hasTrade && S.wear < 4;
         S.score = calcScore();
       }
       say(`Day ${S.day} — ${n.name}\n\n${n.desc}`);
@@ -1390,7 +1131,7 @@ function createGame(seed) {
   }
 
   return {
-    travelOneDay, makeCamp, chooseEventChoice, settlementAction, sundayAction,
+    travelOneDay, makeCamp, chooseEventChoice, settlementAction,
     getState() { return JSON.parse(JSON.stringify(S)); },
     getCart() { return JSON.parse(JSON.stringify(cart)); },
     getNarrative() { return [...narrative]; },
@@ -1403,7 +1144,6 @@ function createGame(seed) {
     getAvailableActions() {
       if (S.pendingEvent) return { type: 'event', choices: S.pendingEvent.choices.map((c, i) => ({ index: i, text: c.text, dc: c.dc, need: c.need })) };
       if (S.pendingSettlement) return { type: 'settlement', node: S.pendingSettlement.name, nodeType: S.pendingSettlement.type, actions: getSettlementActions(S.pendingSettlement) };
-      if (S.pendingSundayRest) return { type: 'sunday' };
       return { type: 'travel', actions: ['travel', 'camp'] };
     },
     stateSummary() {
@@ -1493,11 +1233,6 @@ function updateStatus() {
   wearEl.className = 'stat-value' + (s.wear >= 3 ? ' wear-high' : '');
 
   document.getElementById('s-crew').textContent = s.crew.charAt(0).toUpperCase() + s.crew.slice(1);
-
-  const squealNames = ['Quiet', 'Murmuring', 'Loud', 'Shrieking'];
-  const squealEl = document.getElementById('s-squeal');
-  const squealVal = game.getState().squealLevel;
-  squealEl.textContent = squealNames[squealVal] || 'Quiet';
 }
 
 function showNarrative() {
@@ -1515,20 +1250,9 @@ function hideAllOverlays() {
 function presentEvent() {
   const ev = game.getPendingEvent();
   if (!ev) return;
-  const _eEmoji = { rough_ground:'🪨', prairie_fire:'🔥', buffalo_herd:'🦬', game_sighted:'🦌', abandoned_camp:'🛺', snake_in_cart:'🐍', good_grazing:'🌿', trail_marker:'🪧', prairie_wind:'💨', thunderhead:'⛈️', meadowlark:'🐦', dried_waterhole:'🏜️', ox_injury:'🦶', other_travelers:'🛺', spring_flooding:'🌊', fishing_spot:'🎣', willow_shade:'🌳', mud_hole:'🟤', riverbank_collapse:'💥', mosquito_plague:'🦟', broken_ferry:'⛴️', friendly_métis:'⛪', flash_flood:'🌧️', fallen_tree:'🪵', berries:'🫐', lost_trail:'🧭', bear_encounter:'🐻', broken_wheel:'🔧', deer_crossing:'🦌', firewood_opportunity:'🪵', old_cabin:'🏠', steep_descent:'⛰️', eagle:'🦅', rockslide:'🪨', wind_exposure:'🌬️', lost_in_fog:'🌫️', major_crossing:'🌊',    nwmp_patrol:'⭐', mosquito_siege:'🦟', crane_hunt:'🦢', eagle_encounter:'🦅', spy_encounter:'🕵️', geometry_lesson:'🫏', sick_mule:'🐴', elk_hunt:'🦌', antelope_hunt:'🦌',    buffalo_hunt_council:'🦬', buffalo_hunt_march:'🦬', buffalo_hunt_chase:'🦬', buffalo_hunt_return:'🦬', brigade_organization:'🚩', crew_recruitment:'👤', crew_death:'💀', fort_carlton_encounter:'🏰', la_belle_vallee:'🌿', assiniboine_milestone:'🏔️' };
-    // Replace placeholders in events
-    if (ev.id === 'crew_death' && S.crewDetail.members.length > 0) {
-      const alive = S.crewDetail.members.filter(m => m.alive);
-      const sickest = alive.sort((a, b) => a.health - b.health)[0];
-      if (sickest) ev.text = ev.text.replace('<CREW_NAME>', sickest.name);
-    }
-    // Replace role placeholder in buffalo hunt events
-    if (ev.id && ev.id.startsWith('buffalo_hunt') && S.buffaloHuntRole) {
-      const roleText = { hunter: 'a hunter — you will ride with the hunting party', soldier: 'a soldier — you guard the camp and maintain order', guide: 'a guide — you read the prairie and find the herds' };
-      ev.text = ev.text.replace('<ROLE_TEXT>', roleText[S.buffaloHuntRole] || 'a member of the brigade');
-    }
+  const _eEmoji = { rough_ground:'🪨', prairie_fire:'🔥', buffalo_herd:'🦬', game_sighted:'🦌', abandoned_camp:'🛺', snake_in_cart:'🐍', good_grazing:'🌿', trail_marker:'🪧', prairie_wind:'💨', thunderhead:'⛈️', meadowlark:'🐦', dried_waterhole:'🏜️', ox_injury:'🦶', other_travelers:'🛺', spring_flooding:'🌊', fishing_spot:'🎣', willow_shade:'🌳', mud_hole:'🟤', riverbank_collapse:'💥', mosquito_plague:'🦟', broken_ferry:'⛴️', friendly_métis:'⛪', flash_flood:'🌧️', fallen_tree:'🪵', berries:'🫐', lost_trail:'🧭', bear_encounter:'🐻', broken_wheel:'🔧', deer_crossing:'🦌', firewood_opportunity:'🪵', old_cabin:'🏠', steep_descent:'⛰️', eagle:'🦅', rockslide:'🪨', wind_exposure:'🌬️', lost_in_fog:'🌫️', major_crossing:'🌊' };
     document.getElementById('event-art').textContent = (_eEmoji[ev.id] || '❓') + '  ' + ev.id.replace(/_/g, ' ');
-    document.getElementById('event-text').innerHTML = '<p>' + ev.text.replace(/\n\n/g, '</p><p>') + '</p>';
+  document.getElementById('event-text').innerHTML = '<p>' + ev.text.replace(/\n\n/g, '</p><p>') + '</p>';
   document.getElementById('dice-roll').style.display = 'none';
   document.getElementById('event-result').style.display = 'none';
   document.getElementById('event-continue').style.display = 'none';
@@ -1544,9 +1268,7 @@ function presentEvent() {
       // Hide choices, show dice roll
       choices.style.display = 'none';
       const result = game.chooseEventChoice(i);
-      // chooseEventChoice returns an array; extract the inner result object
-      const inner = Array.isArray(result) ? (result[0]?.result || null) : result;
-      showDiceRoll(inner, ch, () => {
+      showDiceRoll(result, ch, () => {
         showNarrative();
         updateStatus();
         updateMap();
@@ -1640,23 +1362,12 @@ function presentSettlement() {
   document.getElementById('settlement-name').textContent = node.name;
   document.getElementById('settlement-desc').textContent = node.desc;
 
-    // Settlement-specific flavor text
-    const special = {
-      "Fort Qu'Appelle": "\n\nThe NWMP post sits on a bluff above the river. Red-coated sentries watch the trail in both directions. The customs officer has seen everything — and forgotten nothing.",
-      "St. Boniface": "\n\nThe Grey Nuns are already walking toward your cart with soup and bandages. They do not ask if you are Catholic. They do not ask if you are well. They simply begin to help.",
-      "Batoche": "\n\nThe church bell rings across the valley as you approach. Children run alongside the cart. Someone is cooking bannock over an open fire. This is not just a settlement — it is a home."
-    };
-    if (special[node.name]) {
-      document.getElementById('settlement-desc').textContent += special[node.name];
-    }
   const actions = game.getAvailableActions();
   const container = document.getElementById('settlement-actions');
   container.innerHTML = '';
 
   const labels = {
-    grease: '🛢 Grease Wheels (1 shaganappi)', trade: '🛒 Trade', repair: '🔧 Repair Cart', rest: '🏕 Rest', heal: '💊 Seek Healing',
-    forage: '🌿 Forage the Settlement Edges', rumours: '👂 Gather Rumours', theology: '⛪ Theology & Science', inspect: '⭐ NWMP Inspection',
-    continue: '🚩 Continue West'
+    trade: '🛒 Trade', repair: '🔧 Repair Cart', rest: '🏕 Rest', heal: '💊 Seek Healing', continue: '🚩 Continue West'
   };
 
   actions.actions.forEach(act => {
@@ -1674,30 +1385,6 @@ function presentSettlement() {
   });
 
   document.getElementById('settlement-overlay').classList.add('active');
-}
-
-// ── Sunday Rest overlay ────────────────────────────────────────
-function presentSundayRest() {
-  const s = game.getState();
-  document.getElementById('sunday-day').textContent = s.day;
-  const actions = document.getElementById('sunday-actions');
-  actions.innerHTML = '';
-  const acts = [
-    { id: 'mend', label: '🔧 Mend Clothes & Cart', desc: 'Repair wear (-1 wear)' },
-    { id: 'grease', label: '🛞 Grease Wheels', desc: 'Remove squeal (free)' },
-    { id: 'bathe', label: '🛀 Bathe in Creek', desc: 'Crew: Rested' },
-    { id: 'theology', label: '📖 Theology & Science', desc: 'Pass the time' },
-    { id: 'hymns', label: '🎵 Evening Hymns', desc: 'Crew: Rested, reset travel fatigue' },
-    { id: 'skip', label: '⏭️ Skip Rest', desc: 'Push on (no benefit)' }
-  ];
-  acts.forEach(a => {
-    const btn = document.createElement('button');
-    btn.className = 'ctrl-btn';
-    btn.innerHTML = `<strong>${a.label}</strong><br><span style="font-size:11px;color:var(--clr-status-accent)">${a.desc}</span>`;
-    btn.onclick = () => { game.sundayAction(a.id); hideAllOverlays(); showNarrative(); updateStatus(); updateMap(); checkOverlays(); };
-    actions.appendChild(btn);
-  });
-  document.getElementById('sunday-overlay').classList.add('active');
 }
 
 // ── Cart overlay ────────────────────────────────────────────────
@@ -1749,7 +1436,7 @@ function showEndScreen() {
   document.getElementById('end-stats').innerHTML = `
     <div class="stat-row"><span class="label">Days on trail</span><span>${s.day}</span></div>
     <div class="stat-row"><span class="label">Food remaining</span><span>${s.food}</span></div>
-    <div class="stat-row"><span class="label">Cart wear</span><span>${s.wear} / 5</span></div>
+    <div class="stat-row"><span class="label">Cart wear</span><span>${s.wear} / 4</span></div>
     <div class="stat-row"><span class="label">Trade goods delivered</span><span>${tgCount}</span></div>
     <div class="stat-row score-row"><span class="label">Score</span><span>${s.score}</span></div>
   `;
@@ -1762,7 +1449,6 @@ function checkOverlays() {
   if (game.isOver()) { showEndScreen(); return; }
   if (game.hasPendingEvent()) { presentEvent(); return; }
   if (game.getState().pendingSettlement) { presentSettlement(); return; }
-  if (game.getState().pendingSundayRest) { presentSundayRest(); return; }
 }
 
 // ── Main action handler ─────────────────────────────────────────
