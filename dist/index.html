@@ -604,6 +604,20 @@
         <div class="crew-modifier" id="crew-modifier"></div>
       </div>
     </div>
+
+    <!-- Sunday Rest Overlay -->
+    <div class="overlay" id="sunday-overlay">
+      <div class="overlay-card">
+        <div class="day-header">⛪ Sunday Rest</div>
+        <h2 id="sunday-title">Day <span id="sunday-day"></span> — The Lord's Day</h2>
+        <div class="settlement-desc" id="sunday-desc">
+          The rhythm of the trail gives way to rest. One day in seven, the brigade stops.<br><br>
+          Trousers and morals are mended. Cart-wheels are greased afresh — along with good resolutions. The sweat of the trail washes away in the nearest creek.<br><br>
+          What will you do with your Sunday?
+        </div>
+        <div class="settlement-actions" id="sunday-actions"></div>
+      </div>
+    </div>
   </div>
 
   <!-- ── Bottom Panel ────────────────────────────────── -->
@@ -968,7 +982,7 @@ function createGame(seed) {
   const S = {
     day: 1, month: 6, season: 'summer', crew: 'rested',
     food: 30, wear: 0, squealLevel: 0, node: 0, segmentDay: 0, travelDaysWithoutRest: 0,
-    over: false, won: false, pendingEvent: null, pendingSettlement: null,
+    over: false, won: false, pendingEvent: null, pendingSettlement: null, pendingSundayRest: false,
     score: 0, camps: 0, eventsResolved: 0, tradesMade: 0
   };
 
@@ -1066,6 +1080,34 @@ function createGame(seed) {
     }
   }
 
+  function sundayAction(action) {
+    S.pendingSundayRest = false;
+    // Sunday is free — no food cost for resting this day
+    if (action === 'mend') {
+      S.wear = Math.max(0, S.wear - 1);
+      say("You mend trousers, patch the canvas, bind a cracked spoke with shaganappi. The cart wear decreases. Small repairs, carefully done.");
+    }
+    if (action === 'grease') {
+      S.squealLevel = 0;
+      say("You grease the cart-wheels afresh. The terrible squealing stops. The prairie is quiet again — at least until Monday.");
+    }
+    if (action === 'bathe') {
+      S.crew = 'rested';
+      say("You wash away the sweat of the trail in the nearest creek. The water is cold. The crew feels renewed.");
+    }
+    if (action === 'theology') {
+      say("The man of science divides his time between Paul's Epistles and the compound microscope. Joseph offers a theological disputation on the nature of grace. You are not sure who wins, but the day is passed in good company.");
+    }
+    if (action === 'hymns') {
+      S.crew = 'rested';
+      S.travelDaysWithoutRest = 0;
+      say("After supper, the crew gathers about the camp-fire. Old Hundred. Balerma. Dundee. Ward. The voices carry across the prairie into the vast, indifferent sky. For a moment, the trail feels like home.");
+    }
+    if (action === 'skip') {
+      say("You push on. The trail does not rest, and neither will you. The crew murmurs but obeys.");
+    }
+  }
+
   function getSettlementActions(n) {
     const a = [];
     if (n.type === 'hbc') a.push('grease', 'trade', 'repair', 'rest');
@@ -1158,12 +1200,17 @@ function createGame(seed) {
         say(`Day ${S.day} — On the trail (${progress})\n\n${flavor}${squealText}`);
       }
     }
+    // Sunday Rest: every 7th day, if not at a settlement
+    if (S.day % 7 === 0 && !S.pendingSettlement && !S.over) {
+      S.pendingSundayRest = true;
+      stepLog.push({ action: 'sundayRest' });
+    }
+
     checkGameOver();
     return stepLog;
   }
 
   function chooseEventChoice(choiceIndex) {
-    if (!S.pendingEvent) return null;
     const ev = S.pendingEvent; S.pendingEvent = null; S.eventsResolved++;
     const result = resolveChoice(ev, choiceIndex);
     say(result.text);
@@ -1201,7 +1248,7 @@ function createGame(seed) {
   }
 
   return {
-    travelOneDay, makeCamp, chooseEventChoice, settlementAction,
+    travelOneDay, makeCamp, chooseEventChoice, settlementAction, sundayAction,
     getState() { return JSON.parse(JSON.stringify(S)); },
     getCart() { return JSON.parse(JSON.stringify(cart)); },
     getNarrative() { return [...narrative]; },
@@ -1214,6 +1261,7 @@ function createGame(seed) {
     getAvailableActions() {
       if (S.pendingEvent) return { type: 'event', choices: S.pendingEvent.choices.map((c, i) => ({ index: i, text: c.text, dc: c.dc, need: c.need })) };
       if (S.pendingSettlement) return { type: 'settlement', node: S.pendingSettlement.name, nodeType: S.pendingSettlement.type, actions: getSettlementActions(S.pendingSettlement) };
+      if (S.pendingSundayRest) return { type: 'sunday' };
       return { type: 'travel', actions: ['travel', 'camp'] };
     },
     stateSummary() {
@@ -1464,6 +1512,30 @@ function presentSettlement() {
   document.getElementById('settlement-overlay').classList.add('active');
 }
 
+// ── Sunday Rest overlay ────────────────────────────────────────
+function presentSundayRest() {
+  const s = game.getState();
+  document.getElementById('sunday-day').textContent = s.day;
+  const actions = document.getElementById('sunday-actions');
+  actions.innerHTML = '';
+  const acts = [
+    { id: 'mend', label: '🔧 Mend Clothes & Cart', desc: 'Repair wear (-1 wear)' },
+    { id: 'grease', label: '🛞 Grease Wheels', desc: 'Remove squeal (free)' },
+    { id: 'bathe', label: '🛀 Bathe in Creek', desc: 'Crew: Rested' },
+    { id: 'theology', label: '📖 Theology & Science', desc: 'Pass the time' },
+    { id: 'hymns', label: '🎵 Evening Hymns', desc: 'Crew: Rested, reset travel fatigue' },
+    { id: 'skip', label: '⏭️ Skip Rest', desc: 'Push on (no benefit)' }
+  ];
+  acts.forEach(a => {
+    const btn = document.createElement('button');
+    btn.className = 'ctrl-btn';
+    btn.innerHTML = `<strong>${a.label}</strong><br><span style="font-size:11px;color:var(--clr-status-accent)">${a.desc}</span>`;
+    btn.onclick = () => { game.sundayAction(a.id); hideAllOverlays(); showNarrative(); updateStatus(); updateMap(); checkOverlays(); };
+    actions.appendChild(btn);
+  });
+  document.getElementById('sunday-overlay').classList.add('active');
+}
+
 // ── Cart overlay ────────────────────────────────────────────────
 function showCart() {
   const cart = game.getCart();
@@ -1526,6 +1598,7 @@ function checkOverlays() {
   if (game.isOver()) { showEndScreen(); return; }
   if (game.hasPendingEvent()) { presentEvent(); return; }
   if (game.getState().pendingSettlement) { presentSettlement(); return; }
+  if (game.getState().pendingSundayRest) { presentSundayRest(); return; }
 }
 
 // ── Main action handler ─────────────────────────────────────────
