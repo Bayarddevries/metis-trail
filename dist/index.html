@@ -551,6 +551,7 @@
     <span class="stat"><span class="stat-label">Food</span><span class="stat-value" id="s-food">20</span></span>
     <span class="stat"><span class="stat-label">Wear</span><span class="stat-value" id="s-wear">0</span></span>
     <span class="stat"><span class="stat-label">Crew</span><span class="stat-value" id="s-crew">Rested</span></span>
+    <span class="stat"><span class="stat-label">Squeal</span><span class="stat-value" id="s-squeal">Quiet</span></span>
   </div>
 
   <!-- ── Map Panel ───────────────────────────────────── -->
@@ -912,7 +913,7 @@ function createGame(seed) {
 
   const S = {
     day: 1, month: 6, season: 'summer', crew: 'rested',
-    food: 12, wear: 0, node: 0, segmentDay: 0, travelDaysWithoutRest: 0,
+    food: 30, wear: 0, squealLevel: 0, node: 0, segmentDay: 0, travelDaysWithoutRest: 0,
     over: false, won: false, pendingEvent: null, pendingSettlement: null,
     score: 0, camps: 0, eventsResolved: 0, tradesMade: 0
   };
@@ -940,7 +941,7 @@ function createGame(seed) {
       S.over = true;
       say("You have run out of food.\n\nThe trail stretches ahead, but your crew cannot go on. Weak, you make camp and fire smoke signals. Whether anyone comes in time is another story.\n\n— Game Over —");
     }
-    if (S.wear >= 4) {
+    if (S.wear >= 5) {
       S.over = true;
       say("The cart breaks down completely.\n\nThe axle snaps. The wheel collapses. You stand on the prairie with your supplies scattered. Fort Edmonton is still days away.\n\n— Game Over —");
     }
@@ -967,11 +968,12 @@ function createGame(seed) {
     if (action === 'continue') { say("You pack up and head west. The trail awaits."); return; }
     if (action === 'rest') {
       S.crew = 'rested';
-      S.food -= 1;
+      S.food += 2;
       S.travelDaysWithoutRest = 0;
+      S.squealLevel = 0;
       S.day++;
       advanceMonth();
-      say("You rest for the day. The crew recovers. You consume 1 food.");
+      say("You rest for the day. The crew recovers. The settlement provides food and rest. +2 Food.");
     }
     if (action === 'repair') {
       const shagItem = cart.find(i => i.name === 'Shaganappi');
@@ -987,11 +989,21 @@ function createGame(seed) {
       }
     }
     if (action === 'heal') { S.crew = 'rested'; say("The nuns tend to your crew. Hot soup, clean bandages. You feel renewed."); }
+    if (action === 'grease') {
+      const shagItem = cart.find(i => i.name === 'Shaganappi');
+      if (shagItem && shagItem.count > 0) {
+        shagItem.count--;
+        S.squealLevel = 0;
+        say("You grease the cart wheels with shaganappi and tallow. The terrible squealing stops. The prairie is quiet again.");
+      } else {
+        say("You have no shaganappi to grease the wheels. The cart continues to shriek.");
+      }
+    }
     if (action === 'trade') {
       const tg = cart.find(i => i.type === 'trade' && i.count > 0);
       if (tg) {
         tg.count--;
-        const foodGain = tg.wt >= 8 ? 4 : 3; // hides worth more than pelts
+        const foodGain = Math.floor(rand() * 5) + 6; // 6-10 food
         S.food += foodGain;
         S.tradesMade++;
         say(`You trade a ${tg.name} for supplies. +${foodGain} Food.`);
@@ -1002,11 +1014,11 @@ function createGame(seed) {
 
   function getSettlementActions(n) {
     const a = [];
-    if (n.type === 'hbc') a.push('trade', 'repair', 'rest');
-    else if (n.type === 'metis') a.push('trade', 'rest');
-    else if (n.type === 'trading') a.push('trade', 'rest');
-    else if (n.type === 'mission') a.push('rest', 'heal');
-    else if (n.type === 'nwmp') a.push('trade', 'rest');
+    if (n.type === 'hbc') a.push('grease', 'trade', 'repair', 'rest');
+    else if (n.type === 'metis') a.push('grease', 'trade', 'rest');
+    else if (n.type === 'trading') a.push('grease', 'trade', 'rest');
+    else if (n.type === 'mission') a.push('grease', 'rest', 'heal');
+    else if (n.type === 'nwmp') a.push('grease', 'trade', 'rest');
     a.push('continue');
     return a;
   }
@@ -1049,12 +1061,14 @@ function createGame(seed) {
     const wearChance = { plains: 0.12, river_valley: 0.18, wooded: 0.22, uplands: 0.25, river: 0.08 };
     if (rand() < (wearChance[NODES[S.node].terrain] || 0.20)) {
       S.wear++;
-      if (S.wear >= 4) { S.over = true; say("Your cart has broken down beyond repair. The trail ends here.\n\n— Game Over —"); }
+      if (S.wear >= 5) { S.over = true; say("Your cart has broken down beyond repair. The trail ends here.\n\n— Game Over —"); }
     }
     // Crew degradation: every 3 travel days without rest → tired, every 5 → exhausted
     S.travelDaysWithoutRest++;
     if (S.travelDaysWithoutRest >= 5 && S.crew !== 'exhausted') { S.crew = 'exhausted'; }
     else if (S.travelDaysWithoutRest >= 3 && S.crew === 'rested') { S.crew = 'tired'; }
+    // Cart squeal: ungreased wheels get louder each day
+    S.squealLevel = Math.min(3, S.squealLevel + 1);
     const stepLog = [];
 
     if (S.segmentDay >= currentDist) {
@@ -1063,7 +1077,7 @@ function createGame(seed) {
       if (S.node >= NODES.length - 1) {
         S.over = true;
         const hasTrade = cart.some(i => i.type === 'trade' && i.count > 0);
-        S.won = hasTrade && S.wear < 4;
+        S.won = hasTrade && S.wear < 5;
         S.score = calcScore();
         const tgCount = cart.filter(i => i.type === 'trade' && i.count > 0).reduce((s, i) => s + i.count, 0);
         if (S.won) {
@@ -1085,7 +1099,9 @@ function createGame(seed) {
       } else {
         const flavor = getTrailFlavor(NODES[S.node].terrain);
         const progress = `${S.segmentDay}/${currentDist} days to ${NODES[S.node + 1].name}`;
-        say(`Day ${S.day} — On the trail (${progress})\n\n${flavor}`);
+        let squealText = '';
+        if (S.squealLevel >= 2) squealText = '\n\nYour cart wheels shriek across the prairie.';
+        say(`Day ${S.day} — On the trail (${progress})\n\n${flavor}${squealText}`);
       }
     }
     checkGameOver();
@@ -1104,7 +1120,7 @@ function createGame(seed) {
       if (S.node >= NODES.length - 1) {
         S.over = true;
         const hasTrade = cart.some(i => i.type === 'trade' && i.count > 0);
-        S.won = hasTrade && S.wear < 4;
+        S.won = hasTrade && S.wear < 5;
         S.score = calcScore();
       }
       say(`Day ${S.day} — ${n.name}\n\n${n.desc}`);
@@ -1233,6 +1249,11 @@ function updateStatus() {
   wearEl.className = 'stat-value' + (s.wear >= 3 ? ' wear-high' : '');
 
   document.getElementById('s-crew').textContent = s.crew.charAt(0).toUpperCase() + s.crew.slice(1);
+
+  const squealNames = ['Quiet', 'Murmuring', 'Loud', 'Shrieking'];
+  const squealEl = document.getElementById('s-squeal');
+  const squealVal = game.getState().squealLevel;
+  squealEl.textContent = squealNames[squealVal] || 'Quiet';
 }
 
 function showNarrative() {
@@ -1369,7 +1390,7 @@ function presentSettlement() {
   container.innerHTML = '';
 
   const labels = {
-    trade: '🛒 Trade', repair: '🔧 Repair Cart', rest: '🏕 Rest', heal: '💊 Seek Healing', continue: '🚩 Continue West'
+    grease: '🛢 Grease Wheels (1 shaganappi)', trade: '🛒 Trade', repair: '🔧 Repair Cart', rest: '🏕 Rest', heal: '💊 Seek Healing', continue: '🚩 Continue West'
   };
 
   actions.actions.forEach(act => {
@@ -1438,7 +1459,7 @@ function showEndScreen() {
   document.getElementById('end-stats').innerHTML = `
     <div class="stat-row"><span class="label">Days on trail</span><span>${s.day}</span></div>
     <div class="stat-row"><span class="label">Food remaining</span><span>${s.food}</span></div>
-    <div class="stat-row"><span class="label">Cart wear</span><span>${s.wear} / 4</span></div>
+    <div class="stat-row"><span class="label">Cart wear</span><span>${s.wear} / 5</span></div>
     <div class="stat-row"><span class="label">Trade goods delivered</span><span>${tgCount}</span></div>
     <div class="stat-row score-row"><span class="label">Score</span><span>${s.score}</span></div>
   `;
