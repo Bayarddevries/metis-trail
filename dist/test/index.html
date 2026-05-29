@@ -1532,7 +1532,7 @@ document.getElementById('fs-toggle').onclick = () => {
     window.eventLog.push({ id: ev.id, total: ev.choices?.length, time: Date.now() });
     let rendered = 0;
     ev.choices.forEach((ch, idx) => {
-      if (!ch.needMet) return;
+      if (ch.need && !game.checkNeed(ch.need)) return;
       const btn = document.createElement('button');
       btn.className = 'choice-btn';
       btn.textContent = ch.text;
