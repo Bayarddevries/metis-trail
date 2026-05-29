@@ -809,6 +809,15 @@ const EVENTS = {
         { text: 'Take the shot from here (DC 16)', dc: 16, ok: 'A miracle of marksmanship. The antelope drops at extreme range. The crew stares. You try to look like you meant to do that.', bad: 'The ball falls short. The antelope bound away, white rumps flashing, and are gone before you can reload.', food: 3 },
         { text: 'Let them run — too much effort', dc: null, ok: '', bad: '', always: 'You watch the pronghorn bound across the prairie. They are the fastest things on the grass. You have neither the time nor the patience today.' }
       ]
+    },
+    {
+      id: 'nwmp_patrol',
+      text: "Three red-coated riders appear on the ridge ahead, moving toward you across the prairie. North West Mounted Police — their scarlet tunics vivid against the brown grass.\n\nThe Carlton Trail is under their jurisdiction. They patrol regularly between the forts — checking for smuggling, enforcing order.\n\nThe sergeant raises a hand. You stop.<span id='nwmp-squeal-hint'></span>",
+      choices: [
+        { text: 'Greet them openly and offer to show your goods', dc: null, ok: '', bad: '', always: 'You pull aside your cart canvas and show your trade goods — bison hides and pelts, all legal. The sergeant nods, makes a note in his ledger, and asks about the trail ahead. You exchange news for ten minutes. They ride on. You feel safer knowing they are out here.' },
+        { text: 'Be polite but keep your cart closed — you have nothing to hide but value your privacy', dc: 11, ok: 'The sergeant seems satisfied with your answers. He asks if you have seen any trouble on the trail. You have not. He tips his hat and rides on.', bad: 'Your reticence annoys the sergeant. He orders a brief search of your cart. They find nothing wrong — but they do find the shaganappi grease and spend twenty minutes asking about your wheel maintenance. You lose the better part of an hour. The squealing of your cart has clearly carried further than you thought.', time: 1 },
+        { text: 'Engage them in conversation and try to learn the trail conditions ahead', dc: 12, ok: 'The sergeant is happy to talk. He tells you the Touchwood Hills pass is clear but there has been trouble with mosquitoes near Qu\'Appelle. He warns that a brigade ahead lost two mules to alkali water. Useful intelligence.', bad: 'The sergeant is curt. He tells you nothing useful beyond "the trail is the trail." His men glance at your cart but do not stop. They ride on without another word.', crew: 'rested' }
+      ]
     }
   ],
   river_valley: [
@@ -916,6 +925,15 @@ const EVENTS = {
       choices: [
         { text: 'Take the shot (DC 14)', dc: 14, ok: 'The rifle cracks. The eagle tumbles, fluttering three or four times its own wing-spread — then recovers and flies off into upper air. You see it hanging over the river later, without an apparent stroke of its pinions, steadily poised in the same spot. A near thing. The crew is impressed.', bad: 'The ball goes wide. The eagle doesn\'t even flinch. It circles once more, then rides the wind west. You reload and watch it go.', crew: 'rested' },
         { text: 'Watch it — some things are not meant to be shot', dc: null, ok: '', bad: '', always: 'You stand and watch the eagle circle. It hangs in the air without a stroke of its pinions, balanced against the wind. Then it rides the thermals west, toward the mountains. The crew is quiet. Some moments on the trail are worth more than meat.', crew: 'rested' }
+      ]
+    },
+    {
+      id: 'spy_encounter',
+      text: "A lone rider approaches from the west — hooded, cautious, his horse picking its way along the ridge. He pulls up when he sees you.\n\n\"Where do you come from?\" you call out.\n\n\"It is not necessary that I tell you.\" His eyes are shadowed under the hood.\n\n\"Are you with us?\" you ask. \"Or against us?\"\n\n\"I do not want to get into bad cloths,\" he says — I don\'t want to get involved. He watches you for a long moment, then turns his horse and rides west without another word.",
+      choices: [
+        { text: 'Let him go — not your concern', dc: null, ok: '', bad: '', always: 'You watch the rider disappear into the west. You will never know whose side he was on. The prairie keeps its secrets.' },
+        { text: 'Follow at a distance (DC 13)', dc: 13, ok: 'You follow the rider for two miles. He meets with two others at a coulee — a brief exchange, then they scatter in three different directions. Spies, certainly. But for whom? You return to your cart with more questions than answers.', bad: 'The rider spots you following. He doubles back, demands to know why you are trailing him. You make an excuse — looking for lost cattle — but he is not fooled. He rides off warning you not to follow. The rest of the day you feel watched.', crew: 'tired', time: 1 },
+        { text: 'Shout after him — demand he identify himself', dc: 10, ok: 'You shout. The rider stops, turns, and studies you. After a long pause, he says: \"I am no one. And you should mind your own business, voyageur.\" He rides on. But you noticed — his horse was fresh. He had not been riding long.', bad: 'The rider spurs his horse and vanishes over the ridge. Your shouting echoes across the empty hills. The crew looks at you like you have lost your mind. Perhaps you have.' }
       ]
     }
   ],
