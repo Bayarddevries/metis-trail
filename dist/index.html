@@ -832,7 +832,13 @@ const EVENTS = {
     { id: 'buffalo_hunt_return', text: "The hunt is over. The meat is cut, dried, packed onto the carts. A total of 1,089,000 pounds — enough to feed the Settlement for months.\n\nBut the meat is heavy. The carts groan. The journey back is slower than the journey out. And the meat will spoil if you delay.\n\nThe captains call for order. The flag rises. The return march begins.", choices: [
       { text: 'Push hard — get the meat home before it spoils (DC 11)', dc: 11, ok: 'You drive the column hard. The carts creak and groan but hold. The meat is hung to dry at every camp. By the time you reach the Settlement, the pemmican is packed and the carts are full.', bad: 'A wheel breaks under the weight. A cart overturns. Meat spills across the prairie. You salvage what you can, but the loss is felt.', huntComplete: 'partial' },
       { text: 'Steady pace — preserve the carts, accept some loss', dc: null, ok: '', bad: '', always: 'You keep a steady pace. The carts hold. Some meat is lost to the heat, but the carts arrive intact. The Settlement will eat well this winter.', huntComplete: 'full' }
-    ]}
+    ]},
+    { id: 'brigade_organization', text: "You come upon a gathering of carts at a trail junction — not a settlement, but a natural meeting point where the trail widens and the grass is good.\n\nDrivers are talking. Some are heading the same way you are. The idea forms naturally: travel together, share the risks, pool the knowledge.\n\nIt has been done before. Ten carts to a brigade. Three drivers per ten carts. An overseer elected by all. A camp flag that regulates the march — when it flies, the guide is chief. When it lowers, the captains govern.\n\nThe question is whether you join them, or whether you ask them to join you.",
+  choices: [
+    { text: 'Join an existing brigade — safety in numbers', dc: null, ok: '', bad: '', always: 'You join the brigade. The overseer welcomes you. You learn the rules: no straying from camp, no hunting on the Sabbath, and the penalties — first offense, your saddle cut up; second, your coat; third, the lash. Travel is slower, but you are not alone.', brigadeBonus: true },
+    { text: 'Propose forming your own brigade — you will be the captain', dc: 13, ok: 'Your cart is in good order, your food stores adequate, and your manner convincing. Three other drivers agree to join your brigade. You elect a guide, raise a flag, and set out westward as an organized company. The flag flies. You are the captain.', bad: 'Not enough drivers are interested. Most prefer to travel alone, or their routes diverge. You press on solo — but the idea stays with you. There will be other junctions.', brigadeBonus: true },
+    { text: 'Decline — you travel faster alone', dc: null, ok: '', bad: '', always: 'You nod politely and move on. The brigade means shared decisions, shared pace, and shared risk. You are your own captain. The trail ahead is yours alone.' }
+  ]}
   ],
   river_valley: [
     { id: 'spring_flooding', text: "The river is high. Not impassable, but the ford is muddy and the current is stronger than you'd like. You can see the trail on the other side — a dark line through the willows.\n\nYour cart is heavy. The ox is steady but not eager.", choices: [
@@ -1016,9 +1022,7 @@ function createGame(seed) {
     food: 30, wear: 0, squealLevel: 0, node: 0, segmentDay: 0, travelDaysWithoutRest: 0,
     over: false, won: false, pendingEvent: null, pendingSettlement: null, pendingSundayRest: false,
     score: 0, camps: 0, eventsResolved: 0, tradesMade: 0,
-    buffaloHuntStage: 0, // 0 = not started, 1 = council done, 2 = march done, 3 = hunt done, 4 = complete
-    buffaloHuntRole: null, // 'hunter', 'soldier', 'guide'
-    buffaloHuntYield: 0
+    buffaloHuntStage: 0, buffaloHuntRole: null, buffaloHuntYield: 0, brigade: false
   };
 
   const narrative = [];
@@ -1229,6 +1233,7 @@ function createGame(seed) {
       S.buffaloHuntStage = 4;
       if (ch.huntComplete === 'partial') { S.food = Math.max(0, S.food - 10); result.effects.push('-10 Food (spoilage)'); }
     }
+    if (ch.brigadeBonus) { S.brigade = true; result.effects.push('Joined brigade (+1 all rolls, -1 speed)'); }
     return result;
   }
 
@@ -1457,7 +1462,7 @@ function hideAllOverlays() {
 function presentEvent() {
   const ev = game.getPendingEvent();
   if (!ev) return;
-  const _eEmoji = { rough_ground:'🪨', prairie_fire:'🔥', buffalo_herd:'🦬', game_sighted:'🦌', abandoned_camp:'🛺', snake_in_cart:'🐍', good_grazing:'🌿', trail_marker:'🪧', prairie_wind:'💨', thunderhead:'⛈️', meadowlark:'🐦', dried_waterhole:'🏜️', ox_injury:'🦶', other_travelers:'🛺', spring_flooding:'🌊', fishing_spot:'🎣', willow_shade:'🌳', mud_hole:'🟤', riverbank_collapse:'💥', mosquito_plague:'🦟', broken_ferry:'⛴️', friendly_métis:'⛪', flash_flood:'🌧️', fallen_tree:'🪵', berries:'🫐', lost_trail:'🧭', bear_encounter:'🐻', broken_wheel:'🔧', deer_crossing:'🦌', firewood_opportunity:'🪵', old_cabin:'🏠', steep_descent:'⛰️', eagle:'🦅', rockslide:'🪨', wind_exposure:'🌬️', lost_in_fog:'🌫️', major_crossing:'🌊', nwmp_patrol:'⭐', mosquito_siege:'🦟', crane_hunt:'🦢', eagle_encounter:'🦅', spy_encounter:'🕵️', geometry_lesson:'🫏', sick_mule:'🐴', elk_hunt:'🦌', antelope_hunt:'🦌', buffalo_hunt_council:'🦬', buffalo_hunt_march:'🦬', buffalo_hunt_chase:'🦬', buffalo_hunt_return:'🦬' };
+  const _eEmoji = { rough_ground:'🪨', prairie_fire:'🔥', buffalo_herd:'🦬', game_sighted:'🦌', abandoned_camp:'🛺', snake_in_cart:'🐍', good_grazing:'🌿', trail_marker:'🪧', prairie_wind:'💨', thunderhead:'⛈️', meadowlark:'🐦', dried_waterhole:'🏜️', ox_injury:'🦶', other_travelers:'🛺', spring_flooding:'🌊', fishing_spot:'🎣', willow_shade:'🌳', mud_hole:'🟤', riverbank_collapse:'💥', mosquito_plague:'🦟', broken_ferry:'⛴️', friendly_métis:'⛪', flash_flood:'🌧️', fallen_tree:'🪵', berries:'🫐', lost_trail:'🧭', bear_encounter:'🐻', broken_wheel:'🔧', deer_crossing:'🦌', firewood_opportunity:'🪵', old_cabin:'🏠', steep_descent:'⛰️', eagle:'🦅', rockslide:'🪨', wind_exposure:'🌬️', lost_in_fog:'🌫️', major_crossing:'🌊',    nwmp_patrol:'⭐', mosquito_siege:'🦟', crane_hunt:'🦢', eagle_encounter:'🦅', spy_encounter:'🕵️', geometry_lesson:'🫏', sick_mule:'🐴', elk_hunt:'🦌', antelope_hunt:'🦌', buffalo_hunt_council:'🦬', buffalo_hunt_march:'🦬', buffalo_hunt_chase:'🦬', buffalo_hunt_return:'🦬', brigade_organization:'🚩' };
     // Replace role placeholder in buffalo hunt events
     if (ev.id && ev.id.startsWith('buffalo_hunt') && S.buffaloHuntRole) {
       const roleText = { hunter: 'a hunter — you will ride with the hunting party', soldier: 'a soldier — you guard the camp and maintain order', guide: 'a guide — you read the prairie and find the herds' };
