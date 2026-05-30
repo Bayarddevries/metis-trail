@@ -550,6 +550,7 @@
     <span class="segment-progress" id="s-segment">Fort Garry — begin your journey</span>
     <span class="stat"><span class="stat-label">Food</span><span class="stat-value" id="s-food">20</span></span>
     <span class="stat"><span class="stat-label">Wear</span><span class="stat-value" id="s-wear">0</span></span>
+    <span class="stat"><span class="stat-label">Squeal</span><span class="stat-value" id="s-squeal">0</span></span>
     <span class="stat"><span class="stat-label">Crew</span><span class="stat-value" id="s-crew">Rested</span></span>
   </div>
 
@@ -856,10 +857,21 @@ const EVENTS = {
       { text: 'Ford the river (Survival DC 12)', dc: 12, ok: 'The ox finds the shallow channel. Water laps at the cart bed but nothing shifts. You reach the far bank soaked but whole.', bad: 'Midway across, a wheel drops into a hole. The cart tilts. You wrestle it level but the axle cracks. Some supplies get wet.', wear: 1, food: -1 },
       { text: 'Build a cart-raft (Survival DC 14)', dc: 14, ok: "You dismantle, wrap, and lash. The raft floats. Three hours later, you're across with a dry cart and your patience intact.", bad: 'The raft is clumsy. Mid-river it spins. You get wet and embarrassed but make it across.', food: -1, need: 'Canvas Tarp' }
     ]}
-  ]
-};
-
-const TRAIL_FLAVOR = {
+  ]\n};\n\nconst TRAIL_FLAVOR = {
+// Validation: ensure every event has at least one choice
+(function() {
+  const emptyChoices = [];
+  for (const terrain in EVENTS) {
+    EVENTS[terrain].forEach(ev => {
+      if (!ev.choices || ev.choices.length === 0) {
+        emptyChoices.push(ev.id);
+      }
+    });
+  }
+  if (emptyChoices.length) {
+    console.error('Events missing choices:', emptyChoices);
+  }
+})();
   plains: [
     "The prairie stretches flat in every direction. Grass to the horizon. Your ox plods steady.",
     "A long day under open sky. The cart creaks its familiar song. The ox knows the rhythm.",
@@ -912,7 +924,7 @@ function createGame(seed) {
 
   const S = {
     day: 1, month: 6, season: 'summer', crew: 'rested',
-    food: 12, wear: 0, node: 0, segmentDay: 0, travelDaysWithoutRest: 0,
+    food: 45, wear: 0, node: 0, segmentDay: 0, travelDaysWithoutRest: 0,
     over: false, won: false, pendingEvent: null, pendingSettlement: null,
     score: 0, camps: 0, eventsResolved: 0, tradesMade: 0
   };
@@ -967,11 +979,11 @@ function createGame(seed) {
     if (action === 'continue') { say("You pack up and head west. The trail awaits."); return; }
     if (action === 'rest') {
       S.crew = 'rested';
-      S.food -= 1;
+      S.food -= 2;
       S.travelDaysWithoutRest = 0;
       S.day++;
       advanceMonth();
-      say("You rest for the day. The crew recovers. You consume 1 food.");
+      say("You rest for the day. The crew recovers. You consume 2 food.");
     }
     if (action === 'repair') {
       const shagItem = cart.find(i => i.name === 'Shaganappi');
@@ -1150,7 +1162,7 @@ function createGame(seed) {
       const n = NODES[S.node]; const next = NODES[S.node + 1]; const dist = next ? next.dist : 0;
       return {
         day: S.day, month: MONTHS[S.month], season: S.season, location: n.name, nodeType: n.type,
-        food: S.food, wear: S.wear, crew: S.crew, node: S.node, totalNodes: NODES.length,
+        food: S.food, squeal: S.squeal, wear: S.wear, crew: S.crew, node: S.node, totalNodes: NODES.length,
         segmentDay: S.segmentDay, segmentDist: dist, nextNode: next ? next.name : null,
         totalWeight: totalWt(), over: S.over, won: S.won, score: S.score,
         pendingEvent: S.pendingEvent ? S.pendingEvent.id : null
@@ -1232,6 +1244,11 @@ function updateStatus() {
   wearEl.textContent = s.wear;
   wearEl.className = 'stat-value' + (s.wear >= 3 ? ' wear-high' : '');
 
+  const squealEl = document.getElementById('s-squeal');
+  if (squealEl) {
+    squealEl.textContent = s.squeal;
+  }
+
   document.getElementById('s-crew').textContent = s.crew.charAt(0).toUpperCase() + s.crew.slice(1);
 }
 
@@ -1258,6 +1275,23 @@ function presentEvent() {
   document.getElementById('event-continue').style.display = 'none';
   const choices = document.getElementById('event-choices');
   choices.innerHTML = '';
+  console.log('Presenting event:', ev.id, 'choicesCount:', ev.choices.length);
+  if (ev.choices.length === 0) {
+    console.error('Event has no choices to display:', ev.id);
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.textContent = 'Continue (debug)';
+    btn.onclick = () => {
+      console.warn('Debug skip event:', ev.id);
+      if (game.clearPendingEvent) game.clearPendingEvent();
+      hideAllOverlays();
+      updateStatus();
+      updateMap();
+    };
+    choices.appendChild(btn);
+    document.getElementById('event-overlay').classList.add('active');
+    return;
+  }
   ev.choices.forEach((ch, i) => {
     const btn = document.createElement('button');
     btn.className = 'choice-btn';

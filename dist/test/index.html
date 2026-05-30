@@ -912,7 +912,7 @@ function createGame(seed) {
 
   const S = {
     day: 1, month: 6, season: 'summer', crew: 'rested',
-    food: 12, wear: 0, node: 0, segmentDay: 0, travelDaysWithoutRest: 0,
+    food: 45, wear: 0, node: 0, segmentDay: 0, travelDaysWithoutRest: 0,
     over: false, won: false, pendingEvent: null, pendingSettlement: null,
     score: 0, camps: 0, eventsResolved: 0, tradesMade: 0
   };
@@ -967,18 +967,20 @@ function createGame(seed) {
     if (action === 'continue') { say("You pack up and head west. The trail awaits."); return; }
     if (action === 'rest') {
       S.crew = 'rested';
-      S.food -= 1;
+      S.food -= 2;
       S.travelDaysWithoutRest = 0;
       S.day++;
       advanceMonth();
-      say("You rest for the day. The crew recovers. You consume 1 food.");
+      say("You rest for the day. The crew recovers. You consume 2 food.");
     }
     if (action === 'repair') {
       const shagItem = cart.find(i => i.name === 'Shaganappi');
-      if (S.wear > 0 && shagItem && shagItem.count > 0) {
+      const toolItem = cart.find(i => i.name === 'Tool Kit');
+      if (S.wear > 0 && shagItem && shagItem.count > 0 && toolItem && toolItem.count > 0) {
         shagItem.count--;
+        toolItem.count--;
         S.wear = Math.max(0, S.wear - 2);
-        say(`You repair the cart using shaganappi strips. Wear reduced to ${S.wear}.`);
+        say(`You repair the cart using shaganappi strips and tool kit. Wear reduced to ${S.wear}.`);
       } else if (S.wear > 0) {
         S.wear = Math.max(0, S.wear - 1);
         say("You do what you can with tools on hand. Wear reduced slightly.");
@@ -1150,7 +1152,7 @@ function createGame(seed) {
       const n = NODES[S.node]; const next = NODES[S.node + 1]; const dist = next ? next.dist : 0;
       return {
         day: S.day, month: MONTHS[S.month], season: S.season, location: n.name, nodeType: n.type,
-        food: S.food, wear: S.wear, crew: S.crew, node: S.node, totalNodes: NODES.length,
+        food: S.food, squeal: S.squeal, wear: S.wear, crew: S.crew, node: S.node, totalNodes: NODES.length,
         segmentDay: S.segmentDay, segmentDist: dist, nextNode: next ? next.name : null,
         totalWeight: totalWt(), over: S.over, won: S.won, score: S.score,
         pendingEvent: S.pendingEvent ? S.pendingEvent.id : null
