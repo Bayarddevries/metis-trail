@@ -87,6 +87,7 @@
     }
     .food-low { color: #e74c3c !important; }
     .wear-high { color: #e74c3c !important; }
+    .squeal-high { color: #D4A017 !important; }
 
     /* ── Map Panel ──────────────────────────────────── */
     #map-panel {
@@ -924,7 +925,7 @@ function createGame(seed) {
 
   const S = {
     day: 1, month: 6, season: 'summer', crew: 'rested',
-    food: 45, wear: 0, node: 0, segmentDay: 0, travelDaysWithoutRest: 0,
+    food: 45, squeal: 0, wear: 0, node: 0, segmentDay: 0, travelDaysWithoutRest: 0,
     over: false, won: false, pendingEvent: null, pendingSettlement: null,
     score: 0, camps: 0, eventsResolved: 0, tradesMade: 0
   };
@@ -933,7 +934,7 @@ function createGame(seed) {
   function say(text) { narrative.push(text); }
 
   function crewMod() { return S.crew === 'rested' ? 1 : S.crew === 'tired' ? 0 : -2; }
-  function wearMod() { return S.wear <= 1 ? 0 : S.wear === 2 ? -1 : -3; }
+  function wearMod() { return S.wear <= 2 ? 0 : S.wear === 3 ? -1 : S.wear === 4 ? -3 : -5; }
   function totalMod() { return crewMod() + wearMod(); }
   function totalWt() { return cart.reduce((s, i) => s + i.wt * i.count, 0); }
 
@@ -952,7 +953,7 @@ function createGame(seed) {
       S.over = true;
       say("You have run out of food.\n\nThe trail stretches ahead, but your crew cannot go on. Weak, you make camp and fire smoke signals. Whether anyone comes in time is another story.\n\n— Game Over —");
     }
-    if (S.wear >= 4) {
+    if (S.wear >= 5) {
       S.over = true;
       say("The cart breaks down completely.\n\nThe axle snaps. The wheel collapses. You stand on the prairie with your supplies scattered. Fort Edmonton is still days away.\n\n— Game Over —");
     }
@@ -979,11 +980,12 @@ function createGame(seed) {
     if (action === 'continue') { say("You pack up and head west. The trail awaits."); return; }
     if (action === 'rest') {
       S.crew = 'rested';
-      S.food -= 2;
+      S.food += 2;
+      S.squeal = 0;
       S.travelDaysWithoutRest = 0;
       S.day++;
       advanceMonth();
-      say("You rest for the day. The crew recovers. You consume 2 food.");
+      say("You rest for the day. The crew recovers. The cart wheels are greased. +2 Food.");
     }
     if (action === 'repair') {
       const shagItem = cart.find(i => i.name === 'Shaganappi');
@@ -1003,22 +1005,32 @@ function createGame(seed) {
       const tg = cart.find(i => i.type === 'trade' && i.count > 0);
       if (tg) {
         tg.count--;
-        const foodGain = tg.wt >= 8 ? 4 : 3; // hides worth more than pelts
+        const foodGain = tg.wt >= 8 ? Math.floor(rand() * 5) + 6 : Math.floor(rand() * 5) + 6; // 6-10 food
         S.food += foodGain;
         S.tradesMade++;
         say(`You trade a ${tg.name} for supplies. +${foodGain} Food.`);
       }
       else say("You browse the goods, but have nothing to trade.");
     }
+    if (action === 'grease') {
+      const shagItem = cart.find(i => i.name === 'Shaganappi');
+      if (shagItem && shagItem.count > 0) {
+        shagItem.count--;
+        S.squeal = 0;
+        say("You apply tallow to the axle hubs. The cart wheels turn silent once more.");
+      } else {
+        say("You need shaganappi to grease the wheels.");
+      }
+    }
   }
 
   function getSettlementActions(n) {
     const a = [];
-    if (n.type === 'hbc') a.push('trade', 'repair', 'rest');
-    else if (n.type === 'metis') a.push('trade', 'rest');
-    else if (n.type === 'trading') a.push('trade', 'rest');
+    if (n.type === 'hbc') a.push('trade', 'repair', 'rest', 'grease');
+    else if (n.type === 'metis') a.push('trade', 'rest', 'grease');
+    else if (n.type === 'trading') a.push('trade', 'rest', 'grease');
     else if (n.type === 'mission') a.push('rest', 'heal');
-    else if (n.type === 'nwmp') a.push('trade', 'rest');
+    else if (n.type === 'nwmp') a.push('trade', 'rest', 'grease');
     a.push('continue');
     return a;
   }
@@ -1061,8 +1073,20 @@ function createGame(seed) {
     const wearChance = { plains: 0.12, river_valley: 0.18, wooded: 0.22, uplands: 0.25, river: 0.08 };
     if (rand() < (wearChance[NODES[S.node].terrain] || 0.20)) {
       S.wear++;
-      if (S.wear >= 4) { S.over = true; say("Your cart has broken down beyond repair. The trail ends here.\n\n— Game Over —"); }
     }
+    // Cart squeal buildup: terrain-based daily increase
+    const squealChance = { plains: 0.15, river_valley: 0.10, wooded: 0.20, uplands: 0.18, river: 0.05 };
+    if (rand() < (squealChance[NODES[S.node].terrain] || 0.15)) {
+      S.squeal = Math.min(100, S.squeal + 10);
+    }
+    // Flavor text at high squeal
+    if (S.squeal >= 60) {
+      say("Your cart wheels shriek across the prairie — a blood-curdling squeal that carries for miles.");
+    } else if (S.squeal >= 30) {
+      say("The cart's ungreased axle groans with each revolution, a mournful sound on the open trail.");
+    }
+    // Breakdown check (>= 5 for Phase A rework)
+    if (S.wear >= 5) { S.over = true; say("Your cart has broken down beyond repair. The trail ends here.\n\n— Game Over —"); }
     // Crew degradation: every 3 travel days without rest → tired, every 5 → exhausted
     S.travelDaysWithoutRest++;
     if (S.travelDaysWithoutRest >= 5 && S.crew !== 'exhausted') { S.crew = 'exhausted'; }
@@ -1075,7 +1099,7 @@ function createGame(seed) {
       if (S.node >= NODES.length - 1) {
         S.over = true;
         const hasTrade = cart.some(i => i.type === 'trade' && i.count > 0);
-        S.won = hasTrade && S.wear < 4;
+        S.won = hasTrade && S.wear < 5;
         S.score = calcScore();
         const tgCount = cart.filter(i => i.type === 'trade' && i.count > 0).reduce((s, i) => s + i.count, 0);
         if (S.won) {
@@ -1116,7 +1140,7 @@ function createGame(seed) {
       if (S.node >= NODES.length - 1) {
         S.over = true;
         const hasTrade = cart.some(i => i.type === 'trade' && i.count > 0);
-        S.won = hasTrade && S.wear < 4;
+        S.won = hasTrade && S.wear < 5;
         S.score = calcScore();
       }
       say(`Day ${S.day} — ${n.name}\n\n${n.desc}`);
@@ -1242,11 +1266,14 @@ function updateStatus() {
 
   const wearEl = document.getElementById('s-wear');
   wearEl.textContent = s.wear;
-  wearEl.className = 'stat-value' + (s.wear >= 3 ? ' wear-high' : '');
+  wearEl.className = 'stat-value' + (s.wear >= 4 ? ' wear-high' : '');
 
   const squealEl = document.getElementById('s-squeal');
   if (squealEl) {
-    squealEl.textContent = s.squeal;
+    const squealLabels = ['Quiet', 'Murmuring', 'Loud', 'Shrieking'];
+    const idx = s.squeal >= 60 ? 3 : s.squeal >= 30 ? 2 : s.squeal >= 10 ? 1 : 0;
+    squealEl.textContent = squealLabels[idx];
+    squealEl.className = 'stat-value' + (s.squeal >= 30 ? ' squeal-high' : '');
   }
 
   document.getElementById('s-crew').textContent = s.crew.charAt(0).toUpperCase() + s.crew.slice(1);
