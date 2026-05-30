@@ -1258,6 +1258,10 @@ function presentEvent() {
   document.getElementById('event-continue').style.display = 'none';
   const choices = document.getElementById('event-choices');
   choices.innerHTML = '';
+  console.log('presentEvent', ev.id, 'choices:', ev.choices?.length);
+  if (!ev.choices || !Array.isArray(ev.choices)) {
+    console.error('presentEvent: ev.choices is not an array!', ev.id, ev.choices);
+  }
   ev.choices.forEach((ch, i) => {
     const btn = document.createElement('button');
     btn.className = 'choice-btn';
@@ -1278,6 +1282,22 @@ function presentEvent() {
     choices.appendChild(btn);
   });
   document.getElementById('event-overlay').classList.add('active');
+  // Continue fallback
+  const _choices = document.getElementById('event-choices');
+  if (_choices && !_choices.querySelector('.continue-fallback')) {
+    const _cntBtn = document.createElement('button');
+    _cntBtn.className = 'choice-btn continue-fallback';
+    _cntBtn.textContent = 'Continue';
+    Object.assign(_cntBtn.style, { display:'inline-block', visibility:'visible', opacity:'1', minWidth:'120px', minHeight:'44px', background:'#8b0000', color:'#fff', fontWeight:'bold', marginTop:'8px' });
+    _cntBtn.onclick = function() {
+      if (_cntBtn.dataset.clicked) return;
+      _cntBtn.dataset.clicked = '1';
+      console.warn('Continue fallback used for', ev.id);
+      game.pendingEvent = null;
+      document.getElementById('event-overlay').classList.remove('active');
+    };
+    _choices.appendChild(_cntBtn);
+  }
 }
 
 function showDiceRoll(result, choice, onComplete) {
@@ -1511,46 +1531,6 @@ document.getElementById('fs-toggle').onclick = () => {
 };
 </script>
 
-<script>
-// Minimal wrapper: keep original presentEvent, force visibility, add Continue fallback
-(function() {
-  const originalPresent = window.presentEvent;
-  if (!originalPresent) { console.error('presentEvent not found'); return; }
-  window.presentEvent = function() {
-    originalPresent();
-    const choices = document.getElementById('event-choices');
-    if (!choices) return;
-    // Force visibility on all buttons
-    Array.from(choices.querySelectorAll('button')).forEach(btn => {
-      btn.style.display = 'inline-block';
-      btn.style.minWidth = '120px';
-      btn.style.minHeight = '44px';
-      btn.style.opacity = '1';
-      btn.style.visibility = 'visible';
-    });
-    // Add Continue fallback if not present
-    if (!choices.querySelector('.continue-fallback')) {
-      const cntBtn = document.createElement('button');
-      cntBtn.className = 'choice-btn continue-fallback';
-      cntBtn.textContent = '⇢ Continue';
-      Object.assign(cntBtn.style, {
-        display: 'inline-block', visibility: 'visible', opacity: '1',
-        minWidth: '120px', minHeight: '44px',
-        background: '#8b0000', color: '#fff', fontWeight: 'bold', marginTop: '8px'
-      });
-      cntBtn.onclick = function() {
-        if (cntBtn.dataset.clicked) return;
-        cntBtn.dataset.clicked = '1';
-        console.warn('Continue fallback used');
-        game.pendingEvent = null;
-        document.getElementById('event-overlay').classList.remove('active');
-      };
-      choices.appendChild(cntBtn);
-    }
-    console.log('presentEvent wrapper: applied');
-  };
-  console.log('presentEvent wrapper installed');
-})();
-</script>
+
 </body>
 </html>
