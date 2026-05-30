@@ -1174,6 +1174,7 @@ function createGame(seed) {
     isOver() { return S.over; }, hasWon() { return S.won; }, getScore() { return S.score; },
     hasPendingEvent() { return S.pendingEvent !== null; },
     getPendingEvent() { return S.pendingEvent ? { id: S.pendingEvent.id, text: S.pendingEvent.text, choices: S.pendingEvent.choices.map(c => ({ text: c.text, dc: c.dc, need: c.need })) } : null },
+    clearPendingEvent() { S.pendingEvent = null; },
     getCurrentNode() { return NODES[S.node]; },
     getNextNode() { return NODES[S.node + 1] || null; },
     getTotalWeight() { return totalWt(); },
@@ -1304,18 +1305,11 @@ function presentEvent() {
   choices.innerHTML = '';
   console.log('Presenting event:', ev.id, 'choicesCount:', ev.choices.length);
   if (ev.choices.length === 0) {
-    console.error('Event has no choices to display:', ev.id);
-    const btn = document.createElement('button');
-    btn.className = 'choice-btn';
-    btn.textContent = 'Continue (debug)';
-    btn.onclick = () => {
-      console.warn('Debug skip event:', ev.id);
-      if (game.clearPendingEvent) game.clearPendingEvent();
-      hideAllOverlays();
-      updateStatus();
-      updateMap();
-    };
-    choices.appendChild(btn);
+    console.error('BUG: Event has no choices:', ev.id);
+    // Show visible error so user sees it even without devtools
+    document.getElementById('event-text').innerHTML += '<p style="color:#ff4444;font-weight:bold;margin-top:12px">⚠ No choices available for this event. Skipping…</p>';
+    game.clearPendingEvent();
+    setTimeout(() => { hideAllOverlays(); updateStatus(); updateMap(); }, 1500);
     document.getElementById('event-overlay').classList.add('active');
     return;
   }
