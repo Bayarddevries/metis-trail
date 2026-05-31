@@ -87,7 +87,6 @@
     }
     .food-low { color: #e74c3c !important; }
     .wear-high { color: #e74c3c !important; }
-    .squeal-high { color: #D4A017 !important; }
 
     /* ── Map Panel ──────────────────────────────────── */
     #map-panel {
@@ -551,8 +550,8 @@
     <span class="segment-progress" id="s-segment">Fort Garry — begin your journey</span>
     <span class="stat"><span class="stat-label">Food</span><span class="stat-value" id="s-food">20</span></span>
     <span class="stat"><span class="stat-label">Wear</span><span class="stat-value" id="s-wear">0</span></span>
-    <span class="stat"><span class="stat-label">Squeal</span><span class="stat-value" id="s-squeal">0</span></span>
     <span class="stat"><span class="stat-label">Crew</span><span class="stat-value" id="s-crew">Rested</span></span>
+    <span class="stat"><span class="stat-label">Squeal</span><span class="stat-value" id="s-squeal">Quiet</span></span>
   </div>
 
   <!-- ── Map Panel ───────────────────────────────────── -->
@@ -622,7 +621,7 @@
 <!-- ── Intro Overlay (full screen, on top of everything) ─ -->
 <div class="overlay active" id="intro-overlay">
   <div class="overlay-card intro-card">
-    <h1>Cart Trail</h1>
+    <h1>Métis Trail</h1>
     <div class="subtitle">A Métis Journey — Fort Garry to Fort Edmonton, 1878</div>
     <div class="flavor-text">
       It is June 15th, 1878. You stand at Fort Garry with a loaded Red River cart, a strong ox, and a long road ahead.
@@ -724,18 +723,6 @@ const EVENTS = {
     { id: 'game_sighted', text: "Movement on the horizon. You shade your eyes — a small herd of pronghorn, maybe two hundred yards south. They haven't seen you yet.\n\nYour rifle is in the cart. Fresh meat would last a few days in this heat.", choices: [
       { text: 'Hunt them (Survival DC 12)', dc: 12, ok: 'You creep close, find your mark. The pronghorn drops. By evening, the meat is cut and packed.', bad: "They spook before you're in range. You walk back to the cart empty-handed.", food: 3 }
     ]},
-    { id: 'elk_hunt', text: "You spot movement at the edge of a shallow coulee — a bull elk, his antlers proud against the sky. He hasn't seen you. The wind is in your favour.\n\nThe prospect of killing an elk is no more to be resisted. You cap your rifle and canter along in the track of his great leaps, the herd scattering before you. He shakes his antlers proudly and plunges into an alder swamp two miles away.\n\nFresh elk meat could feed the crew for a week.", choices: [
-      { text: 'Give chase into the swamp (Hunting DC 13)', dc: 13, ok: 'You track the elk through the mire. He tires before you do. The shot drops him clean. You spend the afternoon butchering — 60 lbs of meat, enough for days.', bad: 'The bull doubles back through the swamp. You lose his trail in the willows. Empty-handed, you return to the cart with wet boots and nothing to show for it.', food: 6, time: 2 },
-      { text: 'Take the shot from here — long range (DC 15)', dc: 15, ok: 'You steady your aim. The crack of the rifle echoes across the prairie. The elk stumbles, then falls. A clean kill at 200 yards.', bad: 'The ball flies wide. The herd bolts. You wasted the shot and the meat.' },
-      { text: 'Let him go — he earned his escape', dc: null, ok: '', bad: '', always: 'You watch the elk disappear into the swamp. The prairie provides, and sometimes the smartest hunt is the one you don\'t make.' }
-    ]},
-    { id: 'antelope_hunt', text: "Pronghorn on the rise — a dozen of them, grazing on the short grass. They're skittish, but the wind is right and you have time.\n\nA single pronghorn, shot clean, gives maybe 30 lbs of venison. Not a feast, but welcome.", choices: [
-      { text: 'Hunt them (Survival DC 13)', dc: 13, ok: 'You circle downwind, find your shot. The pronghorn drops. You dress it on the spot and pack the meat.', bad: 'The herd scatters before you're in position. You follow for a mile, but they're too fast. You return empty-handed.', food: 2, time: 1 }
-    ]},
-    { id: 'mule_geometry', text: "You're riding the mare today — a little variety for the crew. She's been temperamental all morning.\n\nWithout warning, she plants her forelegs and begins describing a complimentary circumference — her tail doing the tangents. You suddenly realize she's decided you are her centre, and she proposes to pass the rest of her life orbiting you.\n\nThis is going badly.", choices: [
-      { text: 'Dismount before she bucks you (Horsemanship DC 12)', dc: 12, ok: 'You slip off before the first buck. She spins in a circle, snorts, and settles. Geometry lesson over.', bad: 'The first buck catches you mid-throw. You hit the ground hard, dirt in your teeth. The mare trots off satisfied. Nothing broken, but your pride will ache longer than your bruises.', crew: 'tired', time: 1 },
-      { text: 'Hold on — show her who\'s boss (Horsemanship DC 14)', dc: 14, ok: 'You grip with your knees, pull her head around, and ride out three full rotations. She gives up, snorting. You both stand there, breathing hard. Victory is yours.', bad: 'She bucks twice more and you lose the fight. You hit the dirt hard enough to see stars. The mare walks back to calm you down with her nose. Humiliating.', crew: 'exhausted', time: 1 }
-    ]},
     { id: 'abandoned_camp', text: "You spot something in the grass — a cart, half-buried by time. The wood is grey and splitting. One wheel is missing.\n\nSomeone left this here. Or lost it. You can see the trail they were trying to follow — west, like you.", choices: [
       { text: 'Search the cart', dc: null, ok: '', bad: '', always: 'You find a coil of rope and some shaganappi strips. Not much, but useful. You also find carved initials: F.R. 1861. Someone else tried this trail and failed.', give: [{ name: 'Rope (50ft)', amt: 1 }, { name: 'Shaganappi', amt: 1 }], time: 1 },
       { text: 'Pay your respects and move on', dc: null, ok: '', bad: '', always: 'You touch the old cart once, then leave. Not everything on the trail deserves disturbing.' }
@@ -795,10 +782,9 @@ const EVENTS = {
       { text: 'Risk the crumbling edge (DC 11)', dc: 11, ok: 'You guide the ox along the very edge. The bank holds. You breathe again on solid ground.', bad: 'The bank gives way under the cart\'s weight. The cart tilts, one wheel over the water. You grab the ox, haul back, and unload half the cargo before you can right it. Everything is muddy. Some goods are ruined.', wear: 1, food: -1 },
       { text: 'Detour through the willows', dc: null, ok: '', bad: '', always: 'You take the long way through the willows. The cart is scratched by branches but intact. It costs you half a day.', time: 1 }
     ]},
-    { id: 'mosquito_plague', text: "The mosquitoes are unbearable. Clouds of them rise from the river shallows with every step. Your ox twitches and stamps. You can barely see through the swarm.\n\nAlkaline water in the swamps has ruined the flavour of your tea, and given all your horses and mules what Joseph called an elementary canal enlargement. The mosquito and gnat miseries have culminated.\n\nYou have a mosquito net in the cart, but it won't cover the ox. And the smoke from a fire only does so much.", choices: [
+    { id: 'mosquito_plague', text: "The mosquitoes are unbearable. Clouds of them rise from the river shallows with every step. Your ox twitches and stamps. You can barely see through the swarm.\n\nYou have a mosquito net in the cart, but it won't cover the ox. And the smoke from a fire only does so much.", choices: [
       { text: 'Push through — they\'ll thin out', dc: null, ok: '', bad: '', always: 'You grit your teeth and walk. The mosquitoes thin after a mile. By evening you\'re covered in bites but through the worst of it.', crew: 'tired' },
-      { text: 'Make camp early and build a smudge fire from green willow', dc: null, ok: '', bad: '', always: 'You build a smudge fire from green willow branches. The smoke drives the mosquitoes back. You lose the rest of the day but sleep without being eaten alive.', time: 1, crew: 'rested' },
-      { text: 'Apply mud and tallow — what protection you have (DC 10)', dc: 10, ok: 'You mix river mud with tallow and coat everyone — crew and animals. It\'s foul-smelling and hardly dignified, but it works. The mosquitoes can\'t bite through the grease.', bad: 'The mud won\'t stick. You spend an hour applying it only to have it wash off in sweat. The mosquitoes feast. You suffer through.', crew: 'tired', time: 1 }
+      { text: 'Make camp early and build a smudge fire', dc: null, ok: '', bad: '', always: 'You build a smudge fire from green willow branches. The smoke drives the mosquitoes back. You lose the rest of the day but sleep without being eaten alive.', time: 1, crew: 'rested' }
     ]},
     { id: 'broken_ferry', text: "You reach the ferry crossing — and find the ferry on the wrong side of the river. The operator is gone. Maybe he'll be back tomorrow. Maybe not.\n\nThe ford here is deep and the current is strong. But you can see the trail on the other side.", choices: [
       { text: 'Wait for the ferry operator', dc: null, ok: '', bad: '', always: 'You wait. The operator shows up the next morning, apologetic. He poles you across for free. You lose a day.', time: 1 },
@@ -807,9 +793,6 @@ const EVENTS = {
     { id: 'friendly_métis', text: "You round a bend and find a Métis family camped by the river. A woman is cooking over a fire. Two children wave at you. The man nods — not unfriendly, but cautious.\n\nThey're heading east. You're heading west. The river is wide enough for both stories.", choices: [
       { text: 'Stop and share a meal', dc: null, ok: '', bad: '', always: 'You share pemmican and tea. The woman tells you the trail ahead is good but warns about mud after the hills. The man offers you a spare shaganappi strip. You part as friends.', food: 1, crew: 'rested', time: 1 },
       { text: 'Trade for supplies', dc: null, ok: '', bad: '', always: 'You trade a bison hide for a bundle of dried fish and a handful of Saskatoon berries. Fair trade. You both move on richer than before.', food: 2 }
-    ]},
-    { id: 'crane_hunt', text: "A sandhill crane stands at the river's edge — tall, grey, prehistoric. It watches you with one golden eye. The current murmurs.\n\nCrane meat is lean but welcome. And the feathers — long and soft — have trade value.", choices: [
-      { text: 'Hunt the crane (Survival DC 12)', dc: 12, ok: 'You circle wide, approach from downwind. The shot is clean. The crane drops at the water's edge. You wade in and retrieve it — two pounds of meat and a handful of fine feathers.', bad: 'Your approach is too direct. The crane erupts from the shallows with a prehistoric shriek. The shot goes wide. The bird is long gone.', food: 1, time: 1 }
     ]},
     { id: 'flash_flood', text: "The sky to the west goes dark. Not a thunderhead — a wall of cloud rolling fast. Then the rain hits. Not a drizzle — a deluge.\n\nWithin minutes the river rises. The trail along the bank floods. You need to get to higher ground now.", choices: [
       { text: 'Abandon the trail and head for high ground (DC 12)', dc: 12, ok: 'You whip the ox up the ridge. Water surges behind you but you make it to high ground. You wait out the flood. The trail is gone when the water recedes — you have to find a new path.', bad: 'The ox balks at the slope. By the time you get moving, the water is ankle-deep and rising. You make it to high ground but the cart takes on water. Supplies ruined.', food: -2, time: 1 },
@@ -853,9 +836,8 @@ const EVENTS = {
       { text: 'Descend carefully, rope the cart (DC 11)', dc: 11, ok: 'You tie the rope to a tree and lower the cart down inch by inch. The ox follows. Slow, but safe.', bad: 'Halfway down, the rope slips. The cart lurches. You catch it, but the wheel hits rock.', wear: 1, need: 'Rope (50ft)' },
       { text: 'Descend without rope (DC 9)', dc: 9, ok: 'You guide the cart down. The ox is sure-footed. You reach the bottom without incident.', bad: "The cart picks up speed. You can't hold it. It hits the bottom hard.", wear: 1 }
     ]},
-    { id: 'eagle', text: "An eagle circles high above the coulee — riding the thermals, wings motionless. It watches you with ancient eyes.\n\nThe uplands stretch in every direction. You can see the trail winding west, and beyond it, nothing but prairie and sky.\n\nYour rifle is in the cart. Eagle feathers have trade value — the Métis prize them. But the bird is high, and a wounded eagle that flies off is a feather you'll never recover.", choices: [
-      { text: 'Take the shot (Marksmanship DC 14)', dc: 14, ok: 'You steady your aim. The crack of the rifle echoes off the coulee walls. The eagle tumbles, fluttering — then recovers and flies off into the upper air. You track it down. The feathers are magnificent.', bad: 'You fire. The ball hits — knocking out a few tail-feathers — but not fatally. The eagle tumbles, flutters three or four times his own wing-spread, then recovers himself and flies off. Without an apparent stroke of his pinions, he keeps himself steadily poised and balanced in the same spot. Then he\'s gone. You find one tail-feather where he tumbled.', food: 1 },
-      { text: 'Watch and let him be', dc: null, ok: '', bad: '', always: 'You stand for a moment, taking in the vastness. The eagle circles once more, then rides the wind west. Some things on the prairie are not yours to take.' }
+    { id: 'eagle', text: "An eagle circles high above the coulee — riding the thermals, wings motionless. It watches you with ancient eyes.\n\nThe uplands stretch in every direction. You can see the trail winding west, and beyond it, nothing but prairie and sky.", choices: [
+      { text: 'Take in the view', dc: null, ok: '', bad: '', always: 'You stand for a moment, taking in the vastness. The journey ahead feels both impossible and inevitable. The eagle circles once more, then rides the wind west.' }
     ]},
     { id: 'rockslide', text: "Loose rock on the slope above you. A stone the size of your fist bounces down the trail — then another. The slope is unstable.\n\nThe trail runs along the base of the slope for the next quarter mile. You can see the debris field from previous rockslides.", choices: [
       { text: 'Move fast and hope (DC 11)', dc: 11, ok: 'You whip the ox forward and sprint along the slope. Rocks bounce around you but none hit the cart. You make it through breathing hard.', bad: 'A stone hits the cart. Then another. One cracks the canvas. A third hits the ox — not hard enough to stop it, but the animal panics and bolts. You wrestle it under control but the cart has taken damage.', wear: 1, time: 1 },
@@ -875,21 +857,10 @@ const EVENTS = {
       { text: 'Ford the river (Survival DC 12)', dc: 12, ok: 'The ox finds the shallow channel. Water laps at the cart bed but nothing shifts. You reach the far bank soaked but whole.', bad: 'Midway across, a wheel drops into a hole. The cart tilts. You wrestle it level but the axle cracks. Some supplies get wet.', wear: 1, food: -1 },
       { text: 'Build a cart-raft (Survival DC 14)', dc: 14, ok: "You dismantle, wrap, and lash. The raft floats. Three hours later, you're across with a dry cart and your patience intact.", bad: 'The raft is clumsy. Mid-river it spins. You get wet and embarrassed but make it across.', food: -1, need: 'Canvas Tarp' }
     ]}
-  ]\n};\n\nconst TRAIL_FLAVOR = {
-// Validation: ensure every event has at least one choice
-(function() {
-  const emptyChoices = [];
-  for (const terrain in EVENTS) {
-    EVENTS[terrain].forEach(ev => {
-      if (!ev.choices || ev.choices.length === 0) {
-        emptyChoices.push(ev.id);
-      }
-    });
-  }
-  if (emptyChoices.length) {
-    console.error('Events missing choices:', emptyChoices);
-  }
-})();
+  ]
+};
+
+const TRAIL_FLAVOR = {
   plains: [
     "The prairie stretches flat in every direction. Grass to the horizon. Your ox plods steady.",
     "A long day under open sky. The cart creaks its familiar song. The ox knows the rhythm.",
@@ -942,7 +913,7 @@ function createGame(seed) {
 
   const S = {
     day: 1, month: 6, season: 'summer', crew: 'rested',
-    food: 45, squeal: 0, wear: 0, node: 0, segmentDay: 0, travelDaysWithoutRest: 0,
+    food: 30, wear: 0, squealLevel: 0, node: 0, segmentDay: 0, travelDaysWithoutRest: 0,
     over: false, won: false, pendingEvent: null, pendingSettlement: null,
     score: 0, camps: 0, eventsResolved: 0, tradesMade: 0
   };
@@ -951,7 +922,7 @@ function createGame(seed) {
   function say(text) { narrative.push(text); }
 
   function crewMod() { return S.crew === 'rested' ? 1 : S.crew === 'tired' ? 0 : -2; }
-  function wearMod() { return S.wear <= 2 ? 0 : S.wear === 3 ? -1 : S.wear === 4 ? -3 : -5; }
+  function wearMod() { return S.wear <= 1 ? 0 : S.wear === 2 ? -1 : -3; }
   function totalMod() { return crewMod() + wearMod(); }
   function totalWt() { return cart.reduce((s, i) => s + i.wt * i.count, 0); }
 
@@ -998,11 +969,11 @@ function createGame(seed) {
     if (action === 'rest') {
       S.crew = 'rested';
       S.food += 2;
-      S.squeal = 0;
       S.travelDaysWithoutRest = 0;
+      S.squealLevel = 0;
       S.day++;
       advanceMonth();
-      say("You rest for the day. The crew recovers. The cart wheels are greased. +2 Food.");
+      say("You rest for the day. The crew recovers. The settlement provides food and rest. +2 Food.");
     }
     if (action === 'repair') {
       const shagItem = cart.find(i => i.name === 'Shaganappi');
@@ -1018,65 +989,36 @@ function createGame(seed) {
       }
     }
     if (action === 'heal') { S.crew = 'rested'; say("The nuns tend to your crew. Hot soup, clean bandages. You feel renewed."); }
+    if (action === 'grease') {
+      const shagItem = cart.find(i => i.name === 'Shaganappi');
+      if (shagItem && shagItem.count > 0) {
+        shagItem.count--;
+        S.squealLevel = 0;
+        say("You grease the cart wheels with shaganappi and tallow. The terrible squealing stops. The prairie is quiet again.");
+      } else {
+        say("You have no shaganappi to grease the wheels. The cart continues to shriek.");
+      }
+    }
     if (action === 'trade') {
       const tg = cart.find(i => i.type === 'trade' && i.count > 0);
       if (tg) {
         tg.count--;
-        const foodGain = tg.wt >= 8 ? Math.floor(rand() * 5) + 6 : Math.floor(rand() * 5) + 6; // 6-10 food
+        const foodGain = Math.floor(rand() * 5) + 6; // 6-10 food
         S.food += foodGain;
         S.tradesMade++;
         say(`You trade a ${tg.name} for supplies. +${foodGain} Food.`);
       }
       else say("You browse the goods, but have nothing to trade.");
     }
-    if (action === 'grease') {
-      const shagItem = cart.find(i => i.name === 'Shaganappi');
-      if (shagItem && shagItem.count > 0) {
-        shagItem.count--;
-        S.squeal = 0;
-        say("You apply tallow to the axle hubs. The cart wheels turn silent once more.");
-      } else {
-        say("You need shaganappi to grease the wheels.");
-      }
-    }
-    if (action === 'forage') {
-      const roll = d20() + crewMod();
-      if (roll >= 12) {
-        const gain = Math.floor(rand() * 4) + 1;
-        S.food += gain;
-        say(`You forage the nearby prairie and come back with berries, roots, and a rabbit. +${gain} Food.`);
-      } else {
-        say("You spend the afternoon searching but find little. The land here has been picked over by other travellers.");
-      }
-      S.day++; advanceMonth();
-    }
-    if (action === 'recruit') {
-      if (S.crew === 'exhausted') {
-        say("No one wants to join an exhausted crew. Rest first, then try again.");
-      } else {
-        say("A traveller agrees to join your brigade. An extra pair of hands for the journey ahead.");
-        S.crew = 'rested';
-      }
-    }
-    if (action === 'rumours') {
-      const rumours = [
-        "\"A buffalo herd was spotted south of the Touchwood Hills. A thousand strong, moving east.\"",
-        "\"The NWMP at Fort Qu'Appelle are checking every cart. Duty has gone up — they say.\"",
-        "\"The Qu'Appelle ferry is washed out. You'll have to ford upstream where the current is weaker.\"",
-        "\"Métis families at Batoche say the HBC pemmican stores are running low. Prices will go up at Fort Carlton.\""
-      ];
-      say(`You listen to the talk around the fire:\n\n${rumours[Math.floor(rand() * rumours.length)]}`);
-      S.day++; advanceMonth();
-    }
   }
 
   function getSettlementActions(n) {
     const a = [];
-    if (n.type === 'hbc') a.push('trade', 'repair', 'rest', 'grease', 'forage', 'recruit');
-    else if (n.type === 'metis') a.push('trade', 'rest', 'grease', 'forage', 'rumours', 'recruit');
-    else if (n.type === 'trading') a.push('trade', 'rest', 'grease', 'forage', 'rumours');
-    else if (n.type === 'mission') a.push('rest', 'heal', 'rumours');
-    else if (n.type === 'nwmp') a.push('trade', 'rest', 'grease', 'rumours');
+    if (n.type === 'hbc') a.push('grease', 'trade', 'repair', 'rest');
+    else if (n.type === 'metis') a.push('grease', 'trade', 'rest');
+    else if (n.type === 'trading') a.push('grease', 'trade', 'rest');
+    else if (n.type === 'mission') a.push('grease', 'rest', 'heal');
+    else if (n.type === 'nwmp') a.push('grease', 'trade', 'rest');
     a.push('continue');
     return a;
   }
@@ -1110,26 +1052,6 @@ function createGame(seed) {
     return result;
   }
 
-  // NWMP patrol encounter: triggered by squeal at NWMP node
-  function checkNWMPPatrol() {
-    if (NODES[S.node].type !== 'nwmp') return;
-    // Base 40% chance, +10% per squeal level above 30
-    const chance = 0.40 + (S.squeal > 30 ? Math.floor((S.squeal - 30) / 10) * 0.10 : 0);
-    if (rand() < Math.min(chance, 0.80)) {
-      S.pendingEvent = {
-        id: 'nwmp_patrol',
-        text: "A red coat steps into the trail ahead, holding up his hand.\n\n\"Papers. Let's see what you're carrying.\"\n\nThe NWMP officer's gaze is steady. His hand rests on his sidearm. Duty collected. Contraband seized. This is the law on the Saskatchewan.\n\n" + (S.squeal > 30 ? "Behind you, the cart wheels shriek across the prairie. The officer's eyes narrow — he's heard that sound before. A squealing cart means ungreased axles, which means a cart that's been pushed hard. It also means you're loud enough to have been heard for miles." : ""),
-        choices: [
-          { text: 'Comply and show your papers (DC 11)', dc: 11, ok: "You hand over your papers — trade manifest, cargo list. The officer examines them, nods, and waves you through. You've nothing to hide. He even points you toward the better grazing to the west.", bad: "The tally doesn't match his ledger. He finds a missing line in your manifest. A small thing, but it's enough. You spend an hour sorting it out under his supervision. He lets you pass but makes a note.", time: 1 },
-          { text: 'Pay the duty and be done with it', dc: null, ok: '', bad: '', always: 'You pay the duty — a few trinkets from the trade goods. The officer counts them, nods, and you're on your way. It costs you, but it\'s faster than arguing.', food: -1, time: 1 },
-          { text: 'Try to talk your way past (Persuasion DC 13)', dc: 13, ok: "\"We're heading west to Fort Edmonton, sir. Family trade, nothing more.\" The officer studies you, then your cart. Something in your manner satisfies him. He nods you through. You breathe again.", bad: "\"Everyone says that.\" He's not buying it. He searches the cart and takes what he calls \"evidence.\" You lose time and goods.", food: -2, wear: 1, time: 2 }
-        ]
-      };
-      return true;
-    }
-    return false;
-  }
-
   function travelOneDay() {
     if (S.over) return [];
     if (S.pendingSettlement) return [];
@@ -1139,36 +1061,14 @@ function createGame(seed) {
     const wearChance = { plains: 0.12, river_valley: 0.18, wooded: 0.22, uplands: 0.25, river: 0.08 };
     if (rand() < (wearChance[NODES[S.node].terrain] || 0.20)) {
       S.wear++;
+      if (S.wear >= 5) { S.over = true; say("Your cart has broken down beyond repair. The trail ends here.\n\n— Game Over —"); }
     }
-    // Cart squeal buildup: terrain-based daily increase
-    const squealChance = { plains: 0.15, river_valley: 0.10, wooded: 0.20, uplands: 0.18, river: 0.05 };
-    if (rand() < (squealChance[NODES[S.node].terrain] || 0.15)) {
-      S.squeal = Math.min(100, S.squeal + 10);
-    }
-    // Flavor text at high squeal
-    if (S.squeal >= 60) {
-      say("Your cart wheels shriek across the prairie — a blood-curdling squeal that carries for miles.");
-    } else if (S.squeal >= 30) {
-      say("The cart's ungreased axle groans with each revolution, a mournful sound on the open trail.");
-    }
-    // Breakdown check (>= 5 for Phase A rework)
-    if (S.wear >= 5) { S.over = true; say("Your cart has broken down beyond repair. The trail ends here.\n\n— Game Over —"); }
     // Crew degradation: every 3 travel days without rest → tired, every 5 → exhausted
     S.travelDaysWithoutRest++;
     if (S.travelDaysWithoutRest >= 5 && S.crew !== 'exhausted') { S.crew = 'exhausted'; }
     else if (S.travelDaysWithoutRest >= 3 && S.crew === 'rested') { S.crew = 'tired'; }
-
-    // Sunday Rest: every 7th day, player must rest
-    if (S.day % 7 === 0 && !S.pendingSettlement) {
-      say("The Lord's Day. The crew rests.\n\nYou mend trousers and grease cart-wheels. The man of science among you divides his time between Paul's Epistles and the compound microscope someone salvaged from a abandoned cart. You wash in the nearest stream.\n\nAfter supper, the crew gathers by the camp-fire and sings — Old Hundred, Balerma, Dundee, Ward. The prairie is quiet and the stars are many.\n\n+2 Morale. Cart squeal reset. wear -1.");
-      S.crew = 'rested';
-      S.squeal = 0;
-      S.wear = Math.max(0, S.wear - 1);
-      S.travelDaysWithoutRest = 0;
-      checkGameOver();
-      return stepLog;
-    }
-
+    // Cart squeal: ungreased wheels get louder each day
+    S.squealLevel = Math.min(3, S.squealLevel + 1);
     const stepLog = [];
 
     if (S.segmentDay >= currentDist) {
@@ -1181,19 +1081,14 @@ function createGame(seed) {
         S.score = calcScore();
         const tgCount = cart.filter(i => i.type === 'trade' && i.count > 0).reduce((s, i) => s + i.count, 0);
         if (S.won) {
-          say(`FORT EDMONTON — Day ${S.day}\n\nYou made it.\n\nThe palisade walls of Fort Edmonton rise before you. The cart — battered, worn, but holding — creaks through the gate. You have ${tgCount} trade goods.\n\nThe Factor looks at your cart, at you, and nods. "Long journey?"\n\n— You have completed the Métis Trail —\nDays: ${S.day} | Wear: ${S.wear} | Food: ${S.food} | Score: ${S.score}`);
+          say(`FORT EDMONTON — Day ${S.day}\n\nYou made it.\n\nThe palisade walls of Fort Edmonton rise before you. The cart — battered, worn, but holding — creaks through the gate. You have ${tgCount} trade goods.\n\nThe Factor looks at your cart, at you, and nods. "Long journey?"\n\n— You have completed the Cart Trail —\nDays: ${S.day} | Wear: ${S.wear} | Food: ${S.food} | Score: ${S.score}`);
         } else {
           say(`FORT EDMONTON — Day ${S.day}\n\nYou arrive at Fort Edmonton, but you have no trade goods to sell. The journey was survival, not profit.\n\n— Journey Complete (No Trade Goods) —`);
         }
         return [];
       }
       say(`Day ${S.day} — ${n.name}\n\n${n.desc}`);
-      if (n.type === 'nwmp' && checkNWMPPatrol()) {
-        stepLog.push({ action: 'event', event: 'nwmp_patrol', choices: S.pendingEvent.choices.map(c => c.text) });
-      } else if (n.type !== 'river') {
-        S.pendingSettlement = n;
-        stepLog.push({ action: 'arrive', node: n.name, nodeType: n.type, actions: getSettlementActions(n) });
-      }
+      if (n.type !== 'river') { S.pendingSettlement = n; stepLog.push({ action: 'arrive', node: n.name, nodeType: n.type, actions: getSettlementActions(n) }); }
     } else {
       const ev = pickEvent();
       if (ev) {
@@ -1204,7 +1099,9 @@ function createGame(seed) {
       } else {
         const flavor = getTrailFlavor(NODES[S.node].terrain);
         const progress = `${S.segmentDay}/${currentDist} days to ${NODES[S.node + 1].name}`;
-        say(`Day ${S.day} — On the trail (${progress})\n\n${flavor}`);
+        let squealText = '';
+        if (S.squealLevel >= 2) squealText = '\n\nYour cart wheels shriek across the prairie.';
+        say(`Day ${S.day} — On the trail (${progress})\n\n${flavor}${squealText}`);
       }
     }
     checkGameOver();
@@ -1257,7 +1154,6 @@ function createGame(seed) {
     isOver() { return S.over; }, hasWon() { return S.won; }, getScore() { return S.score; },
     hasPendingEvent() { return S.pendingEvent !== null; },
     getPendingEvent() { return S.pendingEvent ? { id: S.pendingEvent.id, text: S.pendingEvent.text, choices: S.pendingEvent.choices.map(c => ({ text: c.text, dc: c.dc, need: c.need })) } : null },
-    clearPendingEvent() { S.pendingEvent = null; },
     getCurrentNode() { return NODES[S.node]; },
     getNextNode() { return NODES[S.node + 1] || null; },
     getTotalWeight() { return totalWt(); },
@@ -1270,7 +1166,7 @@ function createGame(seed) {
       const n = NODES[S.node]; const next = NODES[S.node + 1]; const dist = next ? next.dist : 0;
       return {
         day: S.day, month: MONTHS[S.month], season: S.season, location: n.name, nodeType: n.type,
-        food: S.food, squeal: S.squeal, wear: S.wear, crew: S.crew, node: S.node, totalNodes: NODES.length,
+        food: S.food, wear: S.wear, crew: S.crew, node: S.node, totalNodes: NODES.length,
         segmentDay: S.segmentDay, segmentDist: dist, nextNode: next ? next.name : null,
         totalWeight: totalWt(), over: S.over, won: S.won, score: S.score,
         pendingEvent: S.pendingEvent ? S.pendingEvent.id : null
@@ -1350,17 +1246,14 @@ function updateStatus() {
 
   const wearEl = document.getElementById('s-wear');
   wearEl.textContent = s.wear;
-  wearEl.className = 'stat-value' + (s.wear >= 4 ? ' wear-high' : '');
-
-  const squealEl = document.getElementById('s-squeal');
-  if (squealEl) {
-    const squealLabels = ['Quiet', 'Murmuring', 'Loud', 'Shrieking'];
-    const idx = s.squeal >= 60 ? 3 : s.squeal >= 30 ? 2 : s.squeal >= 10 ? 1 : 0;
-    squealEl.textContent = squealLabels[idx];
-    squealEl.className = 'stat-value' + (s.squeal >= 30 ? ' squeal-high' : '');
-  }
+  wearEl.className = 'stat-value' + (s.wear >= 3 ? ' wear-high' : '');
 
   document.getElementById('s-crew').textContent = s.crew.charAt(0).toUpperCase() + s.crew.slice(1);
+
+  const squealNames = ['Quiet', 'Murmuring', 'Loud', 'Shrieking'];
+  const squealEl = document.getElementById('s-squeal');
+  const squealVal = game.getState().squealLevel;
+  squealEl.textContent = squealNames[squealVal] || 'Quiet';
 }
 
 function showNarrative() {
@@ -1386,16 +1279,6 @@ function presentEvent() {
   document.getElementById('event-continue').style.display = 'none';
   const choices = document.getElementById('event-choices');
   choices.innerHTML = '';
-  console.log('Presenting event:', ev.id, 'choicesCount:', ev.choices.length);
-  if (ev.choices.length === 0) {
-    console.error('BUG: Event has no choices:', ev.id);
-    // Show visible error so user sees it even without devtools
-    document.getElementById('event-text').innerHTML += '<p style="color:#ff4444;font-weight:bold;margin-top:12px">⚠ No choices available for this event. Skipping…</p>';
-    game.clearPendingEvent();
-    setTimeout(() => { hideAllOverlays(); updateStatus(); updateMap(); }, 1500);
-    document.getElementById('event-overlay').classList.add('active');
-    return;
-  }
   ev.choices.forEach((ch, i) => {
     const btn = document.createElement('button');
     btn.className = 'choice-btn';
@@ -1406,6 +1289,7 @@ function presentEvent() {
       // Hide choices, show dice roll
       choices.style.display = 'none';
       const result = game.chooseEventChoice(i);
+      // chooseEventChoice returns an array; extract the inner result object
       const inner = Array.isArray(result) ? (result[0]?.result || null) : result;
       showDiceRoll(inner, ch, () => {
         showNarrative();
@@ -1506,7 +1390,7 @@ function presentSettlement() {
   container.innerHTML = '';
 
   const labels = {
-    trade: '🛒 Trade', repair: '🔧 Repair Cart', rest: '🏕 Rest', heal: '💊 Seek Healing', continue: '🚩 Continue West'
+    grease: '🛢 Grease Wheels (1 shaganappi)', trade: '🛒 Trade', repair: '🔧 Repair Cart', rest: '🏕 Rest', heal: '💊 Seek Healing', continue: '🚩 Continue West'
   };
 
   actions.actions.forEach(act => {
@@ -1575,7 +1459,7 @@ function showEndScreen() {
   document.getElementById('end-stats').innerHTML = `
     <div class="stat-row"><span class="label">Days on trail</span><span>${s.day}</span></div>
     <div class="stat-row"><span class="label">Food remaining</span><span>${s.food}</span></div>
-    <div class="stat-row"><span class="label">Cart wear</span><span>${s.wear} / 4</span></div>
+    <div class="stat-row"><span class="label">Cart wear</span><span>${s.wear} / 5</span></div>
     <div class="stat-row"><span class="label">Trade goods delivered</span><span>${tgCount}</span></div>
     <div class="stat-row score-row"><span class="label">Score</span><span>${s.score}</span></div>
   `;
